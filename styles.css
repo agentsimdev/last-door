@@ -304,6 +304,11 @@ h1 i {
 .metrics div:last-child { border-right: 0; }
 .metrics strong { display: block; color: var(--green); font-family: var(--display); font-size: 34px; }
 .metrics span { color: #87a991; font-size: 7px; }
+.receipt-proof { margin-top: 16px; padding-top: 15px; border-top: 1px solid rgba(130, 255, 180, 0.22); }
+.receipt-proof > span { display: block; margin-bottom: 7px; color: #87a991; }
+.receipt-proof strong { display: block; color: var(--green); font-family: var(--display); font-size: 22px; }
+.receipt-proof code { display: block; margin-top: 3px; color: #b8f6cd; font-family: var(--mono); font-size: 9px; }
+.receipt-proof p { margin: 8px 0 0; overflow-wrap: anywhere; color: #70927b; font-size: 7px; line-height: 1.55; }
 
 .telemetry { display: grid; grid-template-rows: auto minmax(320px, 1fr); gap: 16px; }
 .panel { padding: 18px; }
@@ -318,6 +323,13 @@ h1 i {
 .manifest li span { color: #56655c; font-size: 8px; }
 .manifest code { overflow: hidden; color: #b8f6cd; font-family: var(--mono); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .manifest-note { margin: 14px 0 0; color: var(--quiet); font-size: 11px; line-height: 1.5; }
+.authority-proof { margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--line); }
+.authority-proof > span { display: block; margin-bottom: 8px; color: var(--quiet); }
+.authority-proof strong { display: block; margin-bottom: 7px; color: var(--green); }
+.authority-proof strong[data-decision="handoff"] { color: var(--amber); }
+.authority-proof strong[data-decision="complete"] { color: var(--green); }
+.authority-proof code { display: block; color: var(--acid); font-size: 10px; white-space: normal; }
+.authority-proof p { margin: 9px 0 0; overflow-wrap: anywhere; color: #708078; font-size: 7px; line-height: 1.55; }
 
 .live-dot { color: var(--green) !important; }
 .live-dot::before { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--green); content: ""; box-shadow: 0 0 10px var(--green); }

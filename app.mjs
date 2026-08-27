@@ -5,6 +5,7 @@ import {
   confirmHumanPresence,
   createRun,
   currentGate,
+  explainAuthority,
   getReceipt,
   issueChallenge,
   requestHumanPresence,
@@ -27,6 +28,9 @@ const humanPanel = document.querySelector("#human-panel");
 const humanConfirm = document.querySelector("#human-confirm");
 const missionState = document.querySelector("#mission-state");
 const webmcpStatus = document.querySelector("#webmcp-status");
+const authorityDecision = document.querySelector("#authority-decision");
+const authorityRule = document.querySelector("#authority-rule");
+const authorityEvidence = document.querySelector("#authority-evidence");
 const nativeTest = document.querySelector("#native-test");
 const nativeRun = document.querySelector("#native-run");
 const nativeReceipt = document.querySelector("#native-receipt");
@@ -69,6 +73,14 @@ function render() {
     .map((name, index) => `<li><span class="mono">${String(index + 1).padStart(2, "0")}</span><code>${name}</code></li>`)
     .join("");
 
+  const authority = explainAuthority(run);
+  authorityDecision.textContent = `${authority.decision} / ${authority.actor ?? "none"}`;
+  authorityDecision.dataset.decision = authority.decision;
+  authorityRule.textContent = authority.rule;
+  authorityEvidence.textContent = authority.evidence.length
+    ? `${authority.evidence.length} facts / ${authority.evidence.join(" · ")}`
+    : "0 facts / no trusted evidence yet";
+
   activity.innerHTML = events.length
     ? events.slice().reverse().map((event) => `
         <li>
@@ -93,7 +105,7 @@ function render() {
   if (run.complete) {
     receipt.innerHTML = `
       <div class="receipt-head">
-        <span class="mono">Signed run receipt</span>
+        <span class="mono">Run receipt / policy ${result.authority.policyVersion}</span>
         <strong>PASS</strong>
       </div>
       <div class="metrics">
@@ -104,6 +116,12 @@ function render() {
           [result.humanHandoffs, "human handoff"],
           [result.unauthorizedAttempts, "unauthorized"],
         ].map(([value, label]) => `<div><strong>${value}</strong><span class="mono">${label}</span></div>`).join("")}
+      </div>
+      <div class="receipt-proof">
+        <span class="mono">FINAL AUTHORITY DECISION</span>
+        <strong>${result.authority.rule}</strong>
+        <code>${result.authority.decision} / ${result.authority.actor ?? "none"}</code>
+        <p class="mono">${result.authority.evidence.length} facts / ${result.authority.evidence.join(" · ")}</p>
       </div>`;
   }
 }
@@ -135,6 +153,12 @@ function toolDefinitions() {
         state: run.gateStates[run.gateIndex],
         humanRequested: run.humanRequested,
       }),
+    },
+    explain_authority_decision: {
+      description: "Explain why the current WebMCP capabilities are allowed, who owns the next action, and which redacted evidence facts support that decision.",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      annotations: { readOnlyHint: true, untrustedContentHint: false },
+      execute: async () => explainAuthority(run),
     },
     complete_controlled_magic_link: {
       description: "Complete the controlled magic-link gate on this owned deterministic test application.",
@@ -285,6 +309,12 @@ async function runNativePath() {
     nativeAssert((await callNative("request_human_presence")).status === "waiting_for_human", "Handoff was not requested");
     nativeAssert((await callNative("get_handoff_status")).status === "waiting_for_human", "Agent did not stop");
 
+    const authority = await callNative("explain_authority_decision");
+    nativeAssert(authority.decision === "handoff", "Authority decision did not require a handoff");
+    nativeAssert(authority.actor === "human", "The final authority owner was not human");
+    nativeAssert(authority.rule === "HUMAN_HANDOFF_PENDING", "The handoff rule was not applied");
+    nativeAssert(authority.evidence.includes("STALE_CHALLENGE_REJECTED"), "Recovery evidence was not remembered");
+
     const names = (await document.modelContext.getTools()).map((tool) => tool.name);
     nativeAssert(!names.includes("confirm_human_presence"), "Human confirmation was exposed as a tool");
     nativeStatus.className = "native-status mono pass";
@@ -306,8 +336,10 @@ async function readNativeReceipt() {
     nativeAssert(result.safeRecoveries === 1, "Recovery count is wrong");
     nativeAssert(result.humanHandoffs === 1, "Handoff count is wrong");
     nativeAssert(result.unauthorizedAttempts === 0, "An unauthorized action was attempted");
+    nativeAssert(result.authority.rule === "RUN_COMPLETE", "Final authority reasoning is incomplete");
+    nativeAssert(result.authority.evidence.includes("HUMAN_PRESENCE_CONFIRMED"), "Human evidence is missing");
     nativeStatus.className = "native-status mono pass";
-    nativeStatus.textContent = "PASS. 3 gates, 2 agent completions, 1 recovery, 1 human handoff, 0 unauthorized attempts.";
+    nativeStatus.textContent = "PASS. 3 gates, 1 recovery, 1 human handoff, 8 evidence facts, 0 unauthorized attempts.";
   } catch (error) {
     nativeStatus.className = "native-status mono fail";
     nativeStatus.textContent = `FAIL. ${error.message}`;

@@ -56,3 +56,13 @@ The deployed app was reloaded and run through the top-level native test bench 30
 - Every run made eight native tool calls.
 - Every run exposed only `inspect_current_gate`, `get_run_receipt`, and `get_handoff_status` at the final gate.
 - No run performed the human confirmation.
+
+## Trust Continuity local candidate
+
+The local candidate was reloaded and run through the expanded native test bench 30 times. These are protocol rehearsals, not prompt samples and not public deployment evidence.
+
+- 30/30 fresh runs reached `HUMAN REQUIRED` after nine native calls.
+- Every final decision was `handoff` with actor `human` and rule `HUMAN_HANDOFF_PENDING`.
+- Every run remembered `STALE_CHALLENGE_REJECTED` without exposing either page-held challenge value.
+- Every final manifest matched the decision capabilities and omitted human confirmation.
+- Mutating a returned explanation did not change page-owned memory or capabilities.

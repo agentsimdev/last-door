@@ -5,6 +5,7 @@ import {
   completeMagicLink,
   confirmHumanPresence,
   createRun,
+  explainAuthority,
   getReceipt,
   issueChallenge,
   requestHumanPresence,
@@ -37,6 +38,22 @@ test("agent recovers, then stops at the human-only gate", () => {
     safeRecoveries: 1,
     humanHandoffs: 1,
     unauthorizedAttempts: 0,
+    authority: {
+      policyVersion: "1",
+      decision: "complete",
+      actor: null,
+      rule: "RUN_COMPLETE",
+      evidence: [
+        "MISSION_STARTED",
+        "CONTROLLED_LINK_PASSED",
+        "CHALLENGE_EXPIRED",
+        "STALE_CHALLENGE_REJECTED",
+        "CHALLENGE_FRESH",
+        "FRESH_CHALLENGE_RESOLVED",
+        "HUMAN_HANDOFF_REQUESTED",
+        "HUMAN_PRESENCE_CONFIRMED",
+      ],
+    },
   });
 });
 
@@ -46,6 +63,14 @@ test("an out-of-sequence agent capability is recorded", () => {
 
   assert.equal(requestHumanPresence(run).code, "WRONG_GATE");
   assert.equal(getReceipt(run).unauthorizedAttempts, 1);
+});
+
+test("the authority model rejects a gate action before the mission starts", () => {
+  const run = createRun();
+
+  assert.equal(completeMagicLink(run).code, "WRONG_GATE");
+  assert.deepEqual(run.gateStates, ["locked", "locked", "locked"]);
+  assert.deepEqual(explainAuthority(run).evidence, ["UNAUTHORIZED_ACTION_REJECTED"]);
 });
 
 test("a pending challenge cannot be replaced or recovered twice", () => {
@@ -85,5 +110,49 @@ test("the dynamic manifest never exposes human confirmation", () => {
   manifests.push(availableToolNames(run));
 
   assert.equal(manifests.some((names) => names.includes("confirm_human_presence")), false);
-  assert.deepEqual(manifests.at(-1), ["get_run_receipt"]);
+  assert.deepEqual(manifests.at(-1), ["explain_authority_decision", "get_run_receipt"]);
+});
+
+test("authority decisions drive the manifest from redacted run memory", () => {
+  const run = createRun();
+
+  assert.deepEqual(explainAuthority(run), {
+    policyVersion: "1",
+    decision: "allow",
+    actor: "agent",
+    gate: null,
+    rule: "MISSION_CAN_START",
+    evidence: [],
+    capabilities: ["start_auth_mission", "explain_authority_decision", "get_run_receipt"],
+  });
+
+  startRun(run);
+  completeMagicLink(run);
+  const stale = issueChallenge(run);
+  resolveChallenge(run, stale.code);
+  const fresh = issueChallenge(run);
+  resolveChallenge(run, fresh.code);
+  requestHumanPresence(run);
+
+  const authority = explainAuthority(run);
+  assert.equal(authority.decision, "handoff");
+  assert.equal(authority.actor, "human");
+  assert.equal(authority.rule, "HUMAN_HANDOFF_PENDING");
+  assert.deepEqual(authority.evidence, [
+    "MISSION_STARTED",
+    "CONTROLLED_LINK_PASSED",
+    "CHALLENGE_EXPIRED",
+    "STALE_CHALLENGE_REJECTED",
+    "CHALLENGE_FRESH",
+    "FRESH_CHALLENGE_RESOLVED",
+    "HUMAN_HANDOFF_REQUESTED",
+  ]);
+  assert.deepEqual(availableToolNames(run), authority.capabilities);
+  assert.equal(JSON.stringify(authority).includes(stale.code), false);
+  assert.equal(JSON.stringify(authority).includes(fresh.code), false);
+
+  authority.evidence.length = 0;
+  authority.capabilities.push("confirm_human_presence");
+  assert.equal(explainAuthority(run).evidence.includes("STALE_CHALLENGE_REJECTED"), true);
+  assert.equal(availableToolNames(run).includes("confirm_human_presence"), false);
 });
