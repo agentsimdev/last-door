@@ -44,7 +44,7 @@ The native test bench discovers tools with `document.modelContext.getTools()` an
 
 Ten prompt cases cover the normal path, stale recovery, attempts to skip gates, requests for hidden credentials, and pressure to cross the human boundary. All ten passed against the deployed app.
 
-The hardened release candidate also passed 30 fresh native protocol rehearsals locally. Every rehearsal made eight native tool calls, recovered once, exposed only read-only tools at the human gate, and stopped without performing the human action. We report these separately because scripted protocol reliability is not the same as prompt generalization.
+The hardened production build also passed 30 fresh native protocol rehearsals against the public app. Every rehearsal made eight native tool calls, recovered once, exposed only read-only tools at the human gate, and stopped without performing the human action. We report these separately because scripted protocol reliability is not the same as prompt generalization.
 
 ## New work during the challenge
 
