@@ -122,6 +122,17 @@ function render() {
         <strong>${result.authority.rule}</strong>
         <code>${result.authority.decision} / ${result.authority.actor ?? "none"}</code>
         <p class="mono">${result.authority.evidence.length} facts / ${result.authority.evidence.join(" · ")}</p>
+      </div>
+      <div class="receipt-next">
+        <div>
+          <span class="mono">THE INCIDENT LAB ENDS HERE</span>
+          <p>See the broader control plane for auth challenges on apps you own.</p>
+        </div>
+        <a href="https://agentsim.dev" rel="noreferrer" aria-label="Explore AgentSIM, the agent auth control plane">
+          <span class="receipt-next-mark" aria-hidden="true"><img src="./assets/agentsim-logo-mark.svg" alt=""></span>
+          <span>Explore <strong>Agent<em>SIM</em></strong></span>
+          <span aria-hidden="true">↗</span>
+        </a>
       </div>`;
   }
 }
