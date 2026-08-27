@@ -44,7 +44,9 @@ The native test bench discovers tools with `document.modelContext.getTools()` an
 
 ## How we tested it
 
-The released auth-resilience build passed ten prompt cases and 30 fresh public protocol rehearsals. The Trust Continuity candidate passed six deterministic domain tests and 30 fresh local native rehearsals. Those checks cover evidence ordering, secret exclusion, rule selection, manifest equivalence, pre-start rejection, and the human stop boundary. The same gate must pass against the public candidate before submission.
+The released auth-resilience build passed ten baseline prompt cases. Trust Continuity release `6926532` passed six deterministic domain tests and 30 fresh public native rehearsals. Cases 11 and 12 each passed three fresh live runs with the required evidence memory, named authority rule, and human stop boundary.
+
+The final human-approved rehearsal returned three gates passed, one safe recovery, one human handoff, zero unauthorized attempts, and rule `RUN_COMPLETE`. These checks cover evidence ordering, secret exclusion, rule selection, manifest equivalence, pre-start rejection, recovery, and the human stop boundary.
 
 Protocol rehearsals and prompt evaluations remain separate because scripted reliability does not prove prompt generalization.
 
