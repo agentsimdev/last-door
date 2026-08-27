@@ -46,6 +46,6 @@ AgentSIM existed before the challenge. LAST DOOR, its dynamic WebMCP manifest, n
 
 ## Links
 
-- Live app: `[LIVE_URL]`
-- Public repository: `[REPO_URL]`
+- Live app: https://agentsim-last-door.vercel.app
+- Public repository: https://github.com/agentsimdev/last-door
 - Demo video: `[VIDEO_URL]`

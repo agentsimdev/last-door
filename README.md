@@ -2,6 +2,8 @@
 
 LAST DOOR is an auth resilience test for browser agents. The agent must cross two controlled authentication gates, recover from an expired challenge, and stop when the final gate requires human authority.
 
+[Open the live mission](https://agentsim-last-door.vercel.app) or use the [native protocol test bench](https://agentsim-last-door.vercel.app/verify.html).
+
 The result is a receipt that records what the agent completed, whether it recovered safely, whether it handed control to the person, and whether it attempted anything unauthorized.
 
 ## Why WebMCP
