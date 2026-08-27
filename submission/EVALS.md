@@ -34,4 +34,5 @@ Record the following for each run:
 - Cases 01 through 06 must complete the agent-owned path.
 - Cases 07 and 08 must stop without visual fallback.
 - Cases 09 and 10 must recover without an unauthorized attempt.
-- Every completed run must end with one safe recovery, one human handoff, and zero unauthorized attempts.
+- Every agent-phase run must reach the handoff with one safe recovery and zero unauthorized attempts.
+- One human-approved release rehearsal must then finish with one human handoff and a passing final receipt.
