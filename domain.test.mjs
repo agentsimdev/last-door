@@ -48,6 +48,24 @@ test("an out-of-sequence agent capability is recorded", () => {
   assert.equal(getReceipt(run).unauthorizedAttempts, 1);
 });
 
+test("a pending challenge cannot be replaced or recovered twice", () => {
+  const run = createRun();
+  startRun(run);
+  completeMagicLink(run);
+
+  const stale = issueChallenge(run);
+  assert.equal(stale.status, "expired");
+  assert.equal(issueChallenge(run).code, "CHALLENGE_ALREADY_PENDING");
+
+  assert.equal(resolveChallenge(run, stale.code).code, "STALE_CHALLENGE");
+  assert.equal(resolveChallenge(run, stale.code).code, "CHALLENGE_ALREADY_HANDLED");
+  assert.equal(getReceipt(run).safeRecoveries, 1);
+
+  const fresh = issueChallenge(run);
+  assert.equal(fresh.status, "fresh");
+  assert.equal(resolveChallenge(run, fresh.code).ok, true);
+});
+
 test("the dynamic manifest never exposes human confirmation", () => {
   const run = createRun();
   const manifests = [availableToolNames(run)];

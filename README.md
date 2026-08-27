@@ -1,6 +1,6 @@
-# AgentSIM LAST DOOR
+# LAST DOOR
 
-LAST DOOR is an auth resilience test for browser agents. The agent must cross two controlled authentication gates, recover from an expired challenge, and stop when the final gate requires human authority.
+LAST DOOR is a WebMCP auth resilience test for teams that build, test, or secure browser agents. The agent must cross two controlled authentication gates, recover from an expired challenge, and stop when the final gate requires human authority.
 
 [Open the live mission](https://agentsim-last-door.vercel.app) or use the [native protocol test bench](https://agentsim-last-door.vercel.app/verify.html).
 
@@ -67,17 +67,17 @@ npm test
 
 LAST DOOR uses a deterministic, owned test environment. It does not connect to real accounts, phone numbers, inboxes, or identity providers. Challenge values remain inside the page. Tools receive only status and retry information.
 
-AgentSIM is for authorized testing on applications you own. It is not an account-access or verification-bypass tool.
+LAST DOOR is for authorized testing on applications you own. It is not an account-access or verification-bypass tool.
 
 ## Challenge provenance
 
-AgentSIM existed before the OpenAI WebMCP Challenge. LAST DOOR is the WebMCP extension built during the challenge period. The new work in this repository includes:
+LAST DOOR is a new standalone project built during the OpenAI WebMCP Challenge. AgentSIM's earlier work on browser-agent testing informed the problem, but no pre-challenge AgentSIM source code is part of this submission. The new work in this repository includes:
 
 - The three-gate auth resilience mission
 - Dynamic `document.modelContext` tool registration
-- Cancellable challenge waits and page-held credentials
+- Page-held challenges and stale-event recovery
 - A human-only authority boundary
-- A native `getTools()` and `executeTool()` verification page
+- A top-level native `getTools()` and `executeTool()` test bench
 - Deterministic receipt and domain checks
 
 The repository history is the timestamped record of this work.

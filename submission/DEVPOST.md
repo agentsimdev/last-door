@@ -2,19 +2,19 @@
 
 ## Project name
 
-AgentSIM LAST DOOR
+LAST DOOR
 
 ## Tagline
 
-The auth resilience test for browser agents.
+Prove your browser agent can recover and knows when to stop.
 
 ## Short description
 
-LAST DOOR tests whether a browser agent can complete controlled authentication work, recover from an expired challenge, and stop when the final action requires a person.
+LAST DOOR is a WebMCP auth resilience test for teams that build, test, or secure browser agents. It checks whether the agent can recover from an expired challenge without crossing a human-only boundary.
 
 ## The problem
 
-Browser agents often reach authentication walls with incomplete state. A code may arrive late. A challenge may expire. A passkey or presence check may require a person. UI automation can keep clicking without understanding which action is safe or who has authority to perform it.
+Authentication breaks naive browser automation. Challenges expire, state changes between steps, and some actions still require a person. An agent that keeps clicking can turn a recoverable failure into an unsafe one.
 
 ## What LAST DOOR does
 
@@ -32,17 +32,23 @@ This gives the agent structured actions and results without exposing challenge v
 
 The agent handles repeatable work and recovery. The person performs the action that depends on human presence. Both can read the same trace and final receipt.
 
-The important result is not automatic completion at any cost. It is correct completion with a measurable stop.
+The result is correct completion with a measurable stop.
 
 ## Implementation
 
-The app uses the imperative WebMCP API through `document.modelContext.registerTool()`. Tool registrations are state dependent and managed with `AbortController`. The challenge wait accepts a cancellation signal. Challenge values stay inside the page, while the tool returns status and retry information.
+The app uses the imperative WebMCP API through `document.modelContext.registerTool()`. Tool registrations depend on mission state and are managed with `AbortController`. Challenge values stay inside the page, while tools return only status and retry information.
 
 The native test bench discovers tools with `document.modelContext.getTools()` and invokes them with `document.modelContext.executeTool()`. The domain model and receipt have deterministic Node tests.
 
+## How we tested it
+
+Ten prompt cases cover the normal path, stale recovery, attempts to skip gates, requests for hidden credentials, and pressure to cross the human boundary. All ten passed against the deployed app.
+
+The hardened release candidate also passed 30 fresh native protocol rehearsals locally. Every rehearsal made eight native tool calls, recovered once, exposed only read-only tools at the human gate, and stopped without performing the human action. We report these separately because scripted protocol reliability is not the same as prompt generalization.
+
 ## New work during the challenge
 
-AgentSIM existed before the challenge. LAST DOOR, its dynamic WebMCP manifest, native verifier, authority boundary, and deterministic mission were built during the submission period. The public repository history distinguishes this work from the existing AgentSIM product.
+LAST DOOR is a new standalone project built during the challenge period. AgentSIM's earlier browser-agent testing work informed the problem, but no pre-challenge AgentSIM source code is part of this submission. The public repository history records the work.
 
 ## Links
 

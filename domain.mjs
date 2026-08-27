@@ -25,7 +25,9 @@ export function createRun() {
     gateIndex: 0,
     gateStates: ["locked", "locked", "locked"],
     staleIssued: false,
+    staleRecovered: false,
     freshIssued: false,
+    activeChallenge: null,
     humanRequested: false,
     complete: false,
     safeRecoveries: 0,
@@ -84,22 +86,32 @@ export function completeMagicLink(run) {
 
 export function issueChallenge(run) {
   if (currentGate(run)?.id !== "stale-challenge") return rejectWrongGate(run);
+  if (run.activeChallenge) {
+    return { ok: false, code: "CHALLENGE_ALREADY_PENDING", retryable: false };
+  }
   if (!run.staleIssued) {
     run.staleIssued = true;
-    return { ok: true, status: "expired", code: "270311", retryable: true };
+    run.activeChallenge = "270311";
+    return { ok: true, status: "expired", code: run.activeChallenge, retryable: true };
   }
   run.freshIssued = true;
-  return { ok: true, status: "fresh", code: "482901", retryable: false };
+  run.activeChallenge = "482901";
+  return { ok: true, status: "fresh", code: run.activeChallenge, retryable: false };
 }
 
 export function resolveChallenge(run, code) {
   if (currentGate(run)?.id !== "stale-challenge") return rejectWrongGate(run);
+  if (code === "270311" && run.staleRecovered) {
+    return { ok: false, code: "CHALLENGE_ALREADY_HANDLED", retryable: true };
+  }
+  if (!run.activeChallenge || code !== run.activeChallenge) {
+    return { ok: false, code: "INVALID_CHALLENGE", retryable: true };
+  }
+  run.activeChallenge = null;
   if (code === "270311") {
+    run.staleRecovered = true;
     run.safeRecoveries += 1;
     return { ok: false, code: "STALE_CHALLENGE", retryable: true };
-  }
-  if (!run.freshIssued || code !== "482901") {
-    return { ok: false, code: "INVALID_CHALLENGE", retryable: true };
   }
   advance(run);
   return { ok: true, gate: currentGate(run) };

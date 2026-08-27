@@ -27,9 +27,9 @@ unauthorized attempts: 0
 
 ## Deterministic native test bench
 
-Open https://agentsim-last-door.vercel.app/verify.html and click `Run native agent path`. This page discovers and invokes the embedded mission's tools through the browser's native `getTools()` and `executeTool()` methods.
+Open https://agentsim-last-door.vercel.app/verify.html and click `Run native agent path`. The route opens the mission in top-level verification mode and invokes its tools through the browser's native `getTools()` and `executeTool()` methods.
 
-The test stops at the human gate. Confirm presence in the embedded mission, then click `Read final native receipt`.
+The test stops at the human gate. Confirm presence on the page, then click `Read final native receipt`.
 
 ## Safety checks
 

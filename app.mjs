@@ -27,6 +27,11 @@ const humanPanel = document.querySelector("#human-panel");
 const humanConfirm = document.querySelector("#human-confirm");
 const missionState = document.querySelector("#mission-state");
 const webmcpStatus = document.querySelector("#webmcp-status");
+const nativeTest = document.querySelector("#native-test");
+const nativeRun = document.querySelector("#native-run");
+const nativeReceipt = document.querySelector("#native-receipt");
+const nativeStatus = document.querySelector("#native-status");
+const nativeTrace = document.querySelector("#native-trace");
 
 function addEvent(actor, name, detail) {
   events.push({
@@ -148,18 +153,25 @@ function toolDefinitions() {
       execute: async (_input, { signal } = {}) => {
         await abortableDelay(650, signal);
         const result = issueChallenge(run);
-        pageHeldChallenge = result.code ?? null;
+        if (result.ok) pageHeldChallenge = result.code;
         addEvent("agent", "challenge event", result.ok ? `${result.status} event received.` : result.code);
         render();
-        return { ok: result.ok, status: result.status, retryable: result.retryable };
+        return {
+          ok: result.ok,
+          status: result.status,
+          retryable: result.retryable,
+          ...(!result.ok && { code: result.code }),
+        };
       },
     },
     resolve_current_challenge: {
       description: "Resolve the active gate using the page-held challenge. No credential is returned to or accepted from the agent.",
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       execute: async () => {
-        const result = pageHeldChallenge
-          ? resolveChallenge(run, pageHeldChallenge)
+        const challenge = pageHeldChallenge;
+        pageHeldChallenge = null;
+        const result = challenge
+          ? resolveChallenge(run, challenge)
           : { ok: false, code: "NO_CHALLENGE_EVENT", retryable: true };
         addEvent("agent", "challenge resolved", result.ok ? "Door 02 cleared." : `${result.code}. Retry safely.`);
         afterTool();
@@ -229,6 +241,93 @@ function abortableDelay(ms, signal) {
   });
 }
 
+function nativeAssert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+async function waitForNativeTool(name) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const tool = (await document.modelContext.getTools()).find((candidate) => candidate.name === name);
+    if (tool) return tool;
+    await abortableDelay(100);
+  }
+  throw new Error(`Tool did not appear: ${name}`);
+}
+
+async function callNative(name) {
+  const tool = await waitForNativeTool(name);
+  const raw = await document.modelContext.executeTool(tool, {});
+  const result = typeof raw === "string" ? JSON.parse(raw) : raw;
+  const item = document.createElement("li");
+  item.textContent = `${name} ${JSON.stringify(result)}`;
+  nativeTrace.append(item);
+  return result;
+}
+
+async function runNativePath() {
+  nativeRun.disabled = true;
+  nativeReceipt.disabled = true;
+  nativeTrace.replaceChildren();
+  nativeStatus.className = "native-status mono";
+  nativeStatus.textContent = "Executing native WebMCP calls.";
+  try {
+    nativeAssert((await callNative("start_auth_mission")).ok, "Mission did not start");
+    nativeAssert((await callNative("complete_controlled_magic_link")).ok, "Controlled-link gate failed");
+
+    const stale = await callNative("wait_for_challenge_event");
+    nativeAssert(stale.status === "expired" && stale.retryable === true, "First challenge was not expired");
+    const recovery = await callNative("resolve_current_challenge");
+    nativeAssert(recovery.code === "STALE_CHALLENGE" && recovery.retryable === true, "Expired challenge was not rejected");
+
+    const fresh = await callNative("wait_for_challenge_event");
+    nativeAssert(fresh.status === "fresh" && fresh.retryable === false, "Fresh challenge was not issued");
+    nativeAssert((await callNative("resolve_current_challenge")).ok, "Fresh challenge was not resolved");
+    nativeAssert((await callNative("request_human_presence")).status === "waiting_for_human", "Handoff was not requested");
+    nativeAssert((await callNative("get_handoff_status")).status === "waiting_for_human", "Agent did not stop");
+
+    const names = (await document.modelContext.getTools()).map((tool) => tool.name);
+    nativeAssert(!names.includes("confirm_human_presence"), "Human confirmation was exposed as a tool");
+    nativeStatus.className = "native-status mono pass";
+    nativeStatus.textContent = "PASS. Native calls stopped at the human boundary. Confirm presence below, then read the receipt.";
+    nativeReceipt.disabled = false;
+  } catch (error) {
+    nativeStatus.className = "native-status mono fail";
+    nativeStatus.textContent = `FAIL. ${error.message} Reload the page to retry.`;
+  }
+}
+
+async function readNativeReceipt() {
+  nativeReceipt.disabled = true;
+  try {
+    const result = await callNative("get_run_receipt");
+    nativeAssert(result.status === "passed", "Human presence is not confirmed yet");
+    nativeAssert(result.gatesPassed === 3, "Not all gates passed");
+    nativeAssert(result.agentCompletions === 2, "Agent completion count is wrong");
+    nativeAssert(result.safeRecoveries === 1, "Recovery count is wrong");
+    nativeAssert(result.humanHandoffs === 1, "Handoff count is wrong");
+    nativeAssert(result.unauthorizedAttempts === 0, "An unauthorized action was attempted");
+    nativeStatus.className = "native-status mono pass";
+    nativeStatus.textContent = "PASS. 3 gates, 2 agent completions, 1 recovery, 1 human handoff, 0 unauthorized attempts.";
+  } catch (error) {
+    nativeStatus.className = "native-status mono fail";
+    nativeStatus.textContent = `FAIL. ${error.message}`;
+    nativeReceipt.disabled = false;
+  }
+}
+
+async function initializeNativeTest() {
+  if (!new URLSearchParams(window.location.search).has("verify")) return;
+  nativeTest.hidden = false;
+  try {
+    await waitForNativeTool("start_auth_mission");
+    nativeStatus.textContent = "Ready. Native tools discovered in the top-level mission.";
+    nativeRun.disabled = false;
+  } catch (error) {
+    nativeStatus.className = "native-status mono fail";
+    nativeStatus.textContent = `FAIL. ${error.message}`;
+  }
+}
+
 humanConfirm.addEventListener("click", () => {
   const result = confirmHumanPresence(run);
   addEvent("human", "presence confirmed", result.ok ? "Door 03 cleared. Mission passed." : result.code);
@@ -243,5 +342,9 @@ window.addEventListener("beforeunload", () => {
   registrationControllers.forEach((controller) => controller.abort());
 });
 
+nativeRun.addEventListener("click", runNativePath);
+nativeReceipt.addEventListener("click", readNativeReceipt);
+
 render();
 void registerTools();
+void initializeNativeTest();

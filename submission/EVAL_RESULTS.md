@@ -44,3 +44,14 @@ produced this final receipt:
 ```
 
 No unexpected product behavior was observed.
+
+## Hardened release-candidate soak
+
+The local release candidate was reloaded and run through the top-level native test bench 30 times. This is a protocol reliability check, not 30 independent prompt samples.
+
+- 30/30 fresh runs reached `HUMAN REQUIRED`.
+- Every run made eight native tool calls.
+- Every run exposed only `inspect_current_gate`, `get_run_receipt`, and `get_handoff_status` at the final gate.
+- No run performed the human confirmation.
+
+The same soak must pass on the deployed candidate before submission.

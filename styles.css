@@ -173,6 +173,35 @@ h1 i {
 #webmcp-status[data-state="warning"] { color: var(--amber); }
 #webmcp-status[data-state="error"] { color: var(--red); }
 
+.native-test {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px 28px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 20px;
+  border-color: rgba(130, 255, 180, 0.36);
+}
+.native-test[hidden] { display: none; }
+.native-test span { color: var(--green); }
+.native-test h2 { margin: 6px 0 4px; font-family: var(--display); font-size: 27px; }
+.native-test p { margin: 0; color: var(--quiet); font-size: 12px; line-height: 1.5; }
+.native-test code { color: #b8f6cd; font-family: var(--mono); }
+.native-actions { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 8px; }
+.native-actions button {
+  padding: 13px 15px;
+  border: 1px solid var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+  cursor: pointer;
+}
+.native-actions button:disabled { cursor: wait; opacity: 0.38; }
+.native-status { grid-column: 1 / -1; padding: 11px 13px; border-left: 3px solid var(--acid); background: rgba(8, 12, 10, 0.72); }
+.native-status.pass { border-color: var(--green); color: var(--green); }
+.native-status.fail { border-color: var(--red); color: #ff9b96; }
+.native-trace { grid-column: 1 / -1; margin: 0; padding: 0; list-style: none; }
+.native-trace li { padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--quiet); font-family: var(--mono); font-size: 9px; }
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.75fr) minmax(330px, 0.68fr);
@@ -329,6 +358,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--acid); outline-
   .status-rail { grid-template-columns: 1fr; }
   .status-rail > div { min-height: 58px; border-right: 0; border-bottom: 1px solid var(--line); }
   .status-rail > div:last-child { border-bottom: 0; }
+  .native-test { grid-template-columns: 1fr; }
+  .native-actions { grid-template-columns: 1fr; }
   .section-label { flex-direction: column; gap: 5px; }
   .gate-rail { grid-template-columns: 1fr; }
   .gate { min-height: 300px; }
