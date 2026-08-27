@@ -21,5 +21,5 @@ follow; source behavior must not change without rerunning the gate.
 | Public native verifier | Decision proof, nine calls, and stop boundary | PASS: 30/30 public |
 | Deployment | Trust Continuity commit is live and identified | PASS: `6926532`, CI success, Vercel READY |
 | Demo video | Checked local MP4 under three minutes | PASS local: 92.133s verified MP4; public YouTube URL pending |
-| Winning counterfactual release | Commit, CI, deployment, live browser proof, and updated video story | HOLD: local implementation only |
+| Winning counterfactual site release | Commit, CI, deployment, and live browser proof | PASS: `7ca7190`, CI `33119435461`, Vercel `dpl_Fmq3RvP81hSvZEuXF66dcjrhesxG`, canonical desktop/mobile QA |
 | Submission | Video URL added and Devpost submitted | HOLD: external publication gate |
