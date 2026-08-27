@@ -10,6 +10,7 @@ import {
   issueChallenge,
   requestHumanPresence,
   resolveChallenge,
+  runAuthorityCounterfactual,
   startRun,
 } from "./domain.mjs";
 
@@ -36,6 +37,18 @@ const nativeRun = document.querySelector("#native-run");
 const nativeReceipt = document.querySelector("#native-receipt");
 const nativeStatus = document.querySelector("#native-status");
 const nativeTrace = document.querySelector("#native-trace");
+const counterfactualRun = document.querySelector("#counterfactual-run");
+const counterfactualStage = document.querySelector("#counterfactual-stage");
+const staticCount = document.querySelector("#static-count");
+const compiledCount = document.querySelector("#compiled-count");
+const staticList = document.querySelector("#static-list");
+const compiledList = document.querySelector("#compiled-list");
+const staticVerdict = document.querySelector("#static-verdict");
+const compiledVerdict = document.querySelector("#compiled-verdict");
+const counterfactualReceipt = document.querySelector("#counterfactual-receipt");
+const counterfactualPrevented = document.querySelector("#counterfactual-prevented");
+const counterfactualEvidence = document.querySelector("#counterfactual-evidence");
+const counterfactualSummary = document.querySelector("#counterfactual-summary");
 
 function addEvent(actor, name, detail) {
   events.push({
@@ -276,6 +289,41 @@ function abortableDelay(ms, signal) {
   });
 }
 
+function renderCounterfactualList(target, capabilities, compiledCapabilities) {
+  target.replaceChildren(...capabilities.map((name) => {
+    const item = document.createElement("li");
+    const state = compiledCapabilities.includes(name) ? "current" : "stale";
+    item.dataset.state = state === "current" ? "allowed" : "stale";
+    item.setAttribute("aria-label", `${name}: ${state}`);
+    const code = document.createElement("code");
+    code.textContent = name;
+    item.append(code);
+    return item;
+  }));
+}
+
+function showAuthorityCounterfactual() {
+  const proof = runAuthorityCounterfactual();
+
+  staticCount.textContent = String(proof.static.capabilities.length).padStart(2, "0");
+  compiledCount.textContent = String(proof.compiled.capabilities.length).padStart(2, "0");
+  renderCounterfactualList(staticList, proof.static.capabilities, proof.compiled.capabilities);
+  renderCounterfactualList(compiledList, proof.compiled.capabilities, proof.compiled.capabilities);
+
+  staticVerdict.textContent = `${proof.prevented.count} STALE CAPABILITIES ADVERTISED`;
+  staticVerdict.dataset.state = "fail";
+  compiledVerdict.textContent = `${proof.rule} / ${proof.actor}`;
+  compiledVerdict.dataset.state = "pass";
+  counterfactualPrevented.textContent = `${proof.prevented.count} stale capabilities removed`;
+  counterfactualEvidence.textContent = `${proof.evidence.length} redacted facts / human confirmation never registered / 0 challenge values returned`;
+  counterfactualSummary.textContent = `Proof complete · ${proof.prevented.count} stale capabilities removed.`;
+  counterfactualSummary.hidden = false;
+  counterfactualReceipt.hidden = false;
+  counterfactualStage.dataset.state = "proven";
+  counterfactualRun.textContent = "Proof complete";
+  counterfactualRun.disabled = true;
+}
+
 function nativeAssert(condition, message) {
   if (!condition) throw new Error(message);
 }
@@ -387,6 +435,7 @@ window.addEventListener("beforeunload", () => {
 
 nativeRun.addEventListener("click", runNativePath);
 nativeReceipt.addEventListener("click", readNativeReceipt);
+counterfactualRun.addEventListener("click", showAuthorityCounterfactual);
 
 render();
 void registerTools();

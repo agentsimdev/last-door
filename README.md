@@ -1,6 +1,6 @@
 # LAST DOOR
 
-LAST DOOR is a WebMCP trust continuity test for teams that build, test, or secure browser agents. It checks whether an agent can remember redacted evidence, recover from an expired challenge, and explain why the final gate belongs to a person.
+LAST DOOR is a WebMCP authority compiler and trust continuity test for teams that build, test, or secure browser agents. It turns changing evidence into the only capabilities an agent is allowed to see, then proves why the rest disappeared.
 
 [Open the live mission](https://agentsim-last-door.vercel.app) or use the [native protocol test bench](https://agentsim-last-door.vercel.app/verify.html).
 
@@ -11,6 +11,12 @@ The receipt records what the agent completed and which authority rule controlled
 Authentication is stateful. Available actions change after every result, and some actions should never be delegated. LAST DOOR evaluates an explicit authority ontology after each result, then uses WebMCP to publish only the capabilities that decision allows.
 
 The page registers tools with `document.modelContext.registerTool()`. It aborts old registrations whenever the decision changes, then publishes the new manifest. The read-only `explain_authority_decision` tool reports the rule, actor, evidence, and resulting capabilities. The human confirmation button is never registered as a tool.
+
+## The counterfactual
+
+A naive WebMCP implementation can register every agent tool once and leave those tools callable after the state that made them relevant has passed. LAST DOOR includes an isolated comparison that runs the same auth incident against that static baseline and the evidence-compiled authority model.
+
+At the human boundary, the static baseline still advertises all nine real agent capabilities. The compiled manifest contains four, so five stale capabilities are removed. Human confirmation remains a DOM-only action and is never registered in either manifest; neither challenge value appears in the proof. The comparison does not register the unsafe baseline with the browser or alter the live mission.
 
 ## Trust continuity model
 
@@ -103,6 +109,7 @@ LAST DOOR is a new standalone project built during the OpenAI WebMCP Challenge. 
 - A human-only authority boundary
 - A run-scoped evidence memory and deterministic authority reasoner
 - A read-only authority explanation tool and decision receipt
+- An isolated static-versus-compiled authority counterfactual
 - A top-level native `getTools()` and `executeTool()` test bench
 - Deterministic receipt and domain checks
 

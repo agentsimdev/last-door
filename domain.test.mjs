@@ -10,6 +10,7 @@ import {
   issueChallenge,
   requestHumanPresence,
   resolveChallenge,
+  runAuthorityCounterfactual,
   startRun,
 } from "./domain.mjs";
 
@@ -155,4 +156,33 @@ test("authority decisions drive the manifest from redacted run memory", () => {
   authority.capabilities.push("confirm_human_presence");
   assert.equal(explainAuthority(run).evidence.includes("STALE_CHALLENGE_REJECTED"), true);
   assert.equal(availableToolNames(run).includes("confirm_human_presence"), false);
+});
+
+test("the counterfactual compares only real agent tools and preserves the human invariant", () => {
+  const proof = runAuthorityCounterfactual();
+
+  assert.equal(proof.gate, "human-presence");
+  assert.equal(proof.rule, "HUMAN_HANDOFF_PENDING");
+  assert.equal(proof.actor, "human");
+  assert.equal(proof.static.capabilities.length, 9);
+  assert.equal(proof.static.exposesHumanConfirmation, false);
+  assert.equal(proof.compiled.exposesHumanConfirmation, false);
+  assert.equal(proof.invariants.humanConfirmationRegistered, false);
+  assert.deepEqual(proof.compiled.capabilities, [
+    "inspect_current_gate",
+    "explain_authority_decision",
+    "get_run_receipt",
+    "get_handoff_status",
+  ]);
+  assert.deepEqual(proof.prevented.capabilities, [
+    "start_auth_mission",
+    "complete_controlled_magic_link",
+    "wait_for_challenge_event",
+    "resolve_current_challenge",
+    "request_human_presence",
+  ]);
+  assert.equal(proof.prevented.count, 5);
+  assert.equal(JSON.stringify(proof).includes("270311"), false);
+  assert.equal(JSON.stringify(proof).includes("482901"), false);
+  assert.equal(availableToolNames(createRun()).includes("confirm_human_presence"), false);
 });

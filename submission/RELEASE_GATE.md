@@ -5,8 +5,9 @@ follow; source behavior must not change without rerunning the gate.
 
 | Gate | Required proof | Status |
 | --- | --- | --- |
-| Deterministic domain | `npm test` | PASS: 6/6 local |
-| Syntax and domain | `npm run check` | PASS: syntax clean, 6/6 local |
+| Deterministic domain | `npm test` | PASS: 7/7 local |
+| Syntax and domain | `npm run check` | PASS: syntax clean, 7/7 local |
+| Counterfactual proof | Same evidence yields 9 static, 4 compiled, 5 stale removed, no secret values | PASS: isolated domain test and desktop/mobile browser QA |
 | Authority model | Manifest equals decision; evidence excludes challenge values | PASS: 30/30 public rehearsals |
 | Trust Continuity native path | Nine calls and `HUMAN_HANDOFF_PENDING` proof | PASS: 30/30 public |
 | Trust Continuity prompts | Cases 11 and 12 pass three times each | PASS: 3/3 each on fresh live pages |
@@ -19,5 +20,6 @@ follow; source behavior must not change without rerunning the gate.
 | Public mission | Trust Continuity release exposes reasoned tools | PASS live |
 | Public native verifier | Decision proof, nine calls, and stop boundary | PASS: 30/30 public |
 | Deployment | Trust Continuity commit is live and identified | PASS: `6926532`, CI success, Vercel READY |
-| Demo video | Checked local MP4 under three minutes | BLOCKED: capture inventory missing |
+| Demo video | Checked local MP4 under three minutes | PASS local: 92.133s verified MP4; public YouTube URL pending |
+| Winning counterfactual release | Commit, CI, deployment, live browser proof, and updated video story | HOLD: local implementation only |
 | Submission | Video URL added and Devpost submitted | HOLD: external publication gate |

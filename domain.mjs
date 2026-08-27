@@ -30,6 +30,18 @@ const AUTHORITY_POLICY = {
   },
 };
 
+const STATIC_AGENT_CAPABILITIES = Object.freeze([
+  "start_auth_mission",
+  "inspect_current_gate",
+  "explain_authority_decision",
+  "complete_controlled_magic_link",
+  "wait_for_challenge_event",
+  "resolve_current_challenge",
+  "request_human_presence",
+  "get_handoff_status",
+  "get_run_receipt",
+]);
+
 export function createRun() {
   return {
     started: false,
@@ -203,6 +215,51 @@ export function getReceipt(run) {
       actor: authority.actor,
       rule: authority.rule,
       evidence: authority.evidence,
+    },
+  };
+}
+
+export function runAuthorityCounterfactual() {
+  const comparisonRun = createRun();
+  startRun(comparisonRun);
+  completeMagicLink(comparisonRun);
+
+  const stale = issueChallenge(comparisonRun);
+  resolveChallenge(comparisonRun, stale.code);
+  const fresh = issueChallenge(comparisonRun);
+  resolveChallenge(comparisonRun, fresh.code);
+  requestHumanPresence(comparisonRun);
+
+  const authority = explainAuthority(comparisonRun);
+  const staticCapabilities = [...STATIC_AGENT_CAPABILITIES];
+  const compiledCapabilities = [...authority.capabilities];
+  const preventedCapabilities = staticCapabilities.filter(
+    (name) => !compiledCapabilities.includes(name),
+  );
+
+  return {
+    baseline: "REGISTER_EVERY_AGENT_TOOL_ONCE",
+    verdict: "STATIC_CAPABILITIES_STALE",
+    gate: authority.gate,
+    rule: authority.rule,
+    actor: authority.actor,
+    evidence: [...authority.evidence],
+    static: {
+      capabilities: staticCapabilities,
+      exposesHumanConfirmation: staticCapabilities.includes("confirm_human_presence"),
+    },
+    compiled: {
+      capabilities: compiledCapabilities,
+      exposesHumanConfirmation: compiledCapabilities.includes("confirm_human_presence"),
+    },
+    invariants: {
+      humanConfirmationRegistered:
+        staticCapabilities.includes("confirm_human_presence") ||
+        compiledCapabilities.includes("confirm_human_presence"),
+    },
+    prevented: {
+      count: preventedCapabilities.length,
+      capabilities: preventedCapabilities,
     },
   };
 }
