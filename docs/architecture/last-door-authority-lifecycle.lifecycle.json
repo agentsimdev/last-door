@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "LAST DOOR Authority Lifecycle",
+    "output": "last-door-authority-lifecycle.html",
+    "quality_profile": "showcase",
+    "viewBox": [1000, 566],
+    "views": [
+      {
+        "id": "main-mission",
+        "label": "Main mission",
+        "focus": ["missionReady", "linkCleared", "challengeWaiting", "handoffPending", "runComplete"],
+        "note": "Follow authority from the initial manifest to the final structured receipt."
+      },
+      {
+        "id": "safe-recovery",
+        "label": "Safe recovery",
+        "focus": ["challengeWaiting", "staleRejected", "handoffPending"],
+        "note": "An expired event becomes evidence, then a fresh event advances the same mission safely."
+      },
+      {
+        "id": "human-stop",
+        "label": "Human boundary",
+        "focus": ["handoffPending", "personRequired", "runComplete"],
+        "note": "The agent stops, the person acts in the DOM, and the receipt becomes complete."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Mission phases"
+    },
+    {
+      "id": "recovery",
+      "label": "Evidence recovery"
+    },
+    {
+      "id": "humanLane",
+      "label": "Human boundary"
+    }
+  ],
+  "states": [
+    {
+      "id": "missionReady",
+      "type": "start",
+      "label": "Mission Ready",
+      "sublabel": "initial tools published",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "agent"
+    },
+    {
+      "id": "linkCleared",
+      "type": "active",
+      "label": "Link Cleared",
+      "sublabel": "evidence appended",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "agent"
+    },
+    {
+      "id": "challengeWaiting",
+      "type": "waiting",
+      "label": "Challenge Waiting",
+      "sublabel": "page awaits controlled event",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "agent"
+    },
+    {
+      "id": "handoffPending",
+      "type": "decision",
+      "label": "Handoff Pending",
+      "sublabel": "HUMAN_HANDOFF_PENDING",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "agent stops"
+    },
+    {
+      "id": "runComplete",
+      "type": "success",
+      "label": "Run Complete",
+      "sublabel": "structured receipt available",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "done"
+    },
+    {
+      "id": "staleRejected",
+      "type": "failure",
+      "label": "Stale Rejected",
+      "sublabel": "value never leaves the page",
+      "lane": "recovery",
+      "col": 0,
+      "yOffset": 78,
+      "tag": "retryable"
+    },
+    {
+      "id": "personRequired",
+      "type": "external",
+      "label": "Person Required",
+      "sublabel": "no confirmation tool exists",
+      "lane": "humanLane",
+      "col": 2,
+      "tag": "DOM-only"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "expired-event",
+      "from": "challengeWaiting",
+      "to": "staleRejected",
+      "variant": "security",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [[320, 157], [320, 385]]
+    },
+    {
+      "id": "retry-after-stale",
+      "from": "staleRejected",
+      "to": "challengeWaiting",
+      "variant": "emphasis",
+      "fromSide": "left",
+      "toSide": "top",
+      "via": [[20, 385], [20, 80], [402, 80]]
+    },
+    {
+      "id": "agent-stops",
+      "from": "handoffPending",
+      "to": "personRequired",
+      "variant": "security",
+      "route": "drop"
+    },
+    {
+      "id": "person-confirms",
+      "from": "personRequired",
+      "to": "runComplete",
+      "variant": "emphasis",
+      "route": "right-channel"
+    }
+  ]
+}

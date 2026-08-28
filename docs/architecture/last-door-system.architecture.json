@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "LAST DOOR System Architecture",
+    "output": "last-door-system.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/agentsimdev/last-door",
+      "revision": "7c00544297be812711902b1d0d1973d4d639c3a2"
+    },
+    "views": [
+      {
+        "id": "agent-path",
+        "label": "Agent capability path",
+        "focus": ["browserAgent", "toolSurface", "toolHandlers", "runMemory", "authorityReasoner"],
+        "note": "Follow one agent action from discovery through evidence and the next compiled manifest."
+      },
+      {
+        "id": "secret-boundary",
+        "label": "Secret boundary",
+        "focus": ["pageChallenge", "toolHandlers", "runMemory", "browserAgent"],
+        "note": "Challenge values remain page-held while tools expose status and symbolic evidence only."
+      },
+      {
+        "id": "human-boundary",
+        "label": "Human authority",
+        "focus": ["authorityReasoner", "human", "visibleUi", "runMemory", "receipt"],
+        "note": "The final action stays in the DOM, then becomes evidence for the final receipt."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "browserAgent",
+      "type": "external",
+      "label": "Browser Agent",
+      "sublabel": "ChatGPT / WebMCP client",
+      "pos": [30, 250],
+      "size": [150, 72],
+      "sources": [
+        { "path": "app.mjs", "line": 331, "end_line": 348, "label": "Native WebMCP client path" }
+      ]
+    },
+    {
+      "id": "toolSurface",
+      "type": "frontend",
+      "label": "WebMCP Tool Surface",
+      "sublabel": "current advertised capabilities",
+      "pos": [245, 250],
+      "size": [170, 72],
+      "tag": "registerTool()",
+      "sources": [
+        { "path": "app.mjs", "line": 256, "end_line": 279, "label": "Dynamic tool registration" }
+      ]
+    },
+    {
+      "id": "toolHandlers",
+      "type": "backend",
+      "label": "Tool Handlers",
+      "sublabel": "owned mission transitions",
+      "pos": [480, 250],
+      "size": [165, 72],
+      "sources": [
+        { "path": "app.mjs", "line": 159, "end_line": 253, "label": "State-aware tool handlers" }
+      ]
+    },
+    {
+      "id": "runMemory",
+      "type": "database",
+      "label": "Run Memory",
+      "sublabel": "ordered symbolic evidence",
+      "pos": [710, 250],
+      "size": [165, 72],
+      "tag": "run-scoped",
+      "sources": [
+        { "path": "domain.mjs", "line": 45, "end_line": 69, "label": "Run state and evidence" }
+      ]
+    },
+    {
+      "id": "authorityReasoner",
+      "type": "security",
+      "label": "Authority Reasoner",
+      "sublabel": "versioned deterministic rules",
+      "pos": [940, 250],
+      "size": [180, 72],
+      "tag": "allow / handoff / complete",
+      "sources": [
+        { "path": "domain.mjs", "line": 22, "end_line": 31, "label": "Versioned authority policy" },
+        { "path": "domain.mjs", "line": 71, "end_line": 115, "label": "Decision and capability compiler" }
+      ]
+    },
+    {
+      "id": "human",
+      "type": "external",
+      "label": "Person",
+      "sublabel": "non-delegable authority",
+      "pos": [30, 470],
+      "size": [150, 72],
+      "sources": [
+        { "path": "app.mjs", "line": 422, "end_line": 426, "label": "Human DOM confirmation" }
+      ]
+    },
+    {
+      "id": "visibleUi",
+      "type": "frontend",
+      "label": "Visible Mission UI",
+      "sublabel": "gates, trace, human control",
+      "pos": [245, 470],
+      "size": [170, 72],
+      "tag": "DOM-only confirmation",
+      "sources": [
+        { "path": "app.mjs", "line": 66, "end_line": 149, "label": "Mission and receipt UI" }
+      ]
+    },
+    {
+      "id": "pageChallenge",
+      "type": "security",
+      "label": "Page-held Challenge",
+      "sublabel": "expired / fresh values",
+      "pos": [480, 470],
+      "size": [165, 72],
+      "tag": "never returned",
+      "sources": [
+        { "path": "app.mjs", "line": 197, "end_line": 227, "label": "Page-held challenge flow" },
+        { "path": "domain.mjs", "line": 149, "end_line": 184, "label": "Stale and fresh resolution" }
+      ]
+    },
+    {
+      "id": "receipt",
+      "type": "backend",
+      "label": "Structured Receipt",
+      "sublabel": "rules, counters, evidence",
+      "pos": [940, 470],
+      "size": [180, 72],
+      "tag": "verifiable result",
+      "sources": [
+        { "path": "domain.mjs", "line": 203, "end_line": 220, "label": "Structured run receipt" },
+        { "path": "app.mjs", "line": 117, "end_line": 149, "label": "Visible receipt rendering" }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "Page-owned trust boundary",
+      "wraps": ["toolSurface", "toolHandlers", "runMemory", "authorityReasoner", "visibleUi", "pageChallenge", "receipt"],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "agent-discovers-tools",
+      "from": "browserAgent",
+      "to": "toolSurface",
+      "label": "discover + execute",
+      "variant": "emphasis",
+      "labelAt": [213, 336]
+    },
+    {
+      "id": "surface-invokes-handler",
+      "from": "toolSurface",
+      "to": "toolHandlers",
+      "label": "invoke advertised tool",
+      "labelAt": [448, 246]
+    },
+    {
+      "id": "handler-appends-evidence",
+      "from": "toolHandlers",
+      "to": "runMemory",
+      "label": "append symbolic fact",
+      "labelAt": [678, 246]
+    },
+    {
+      "id": "memory-drives-decision",
+      "from": "runMemory",
+      "to": "authorityReasoner",
+      "label": "evaluate ordered evidence",
+      "variant": "emphasis",
+      "labelAt": [908, 246]
+    },
+    {
+      "id": "handler-updates-ui",
+      "from": "toolHandlers",
+      "to": "visibleUi",
+      "label": "visible state update",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "challenge-stays-page-held",
+      "from": "pageChallenge",
+      "to": "toolHandlers",
+      "label": "resolve inside page",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "human-confirms-in-dom",
+      "from": "human",
+      "to": "visibleUi",
+      "label": "DOM-only confirmation",
+      "variant": "security",
+      "labelAt": [213, 466]
+    },
+    {
+      "id": "decision-builds-receipt",
+      "from": "authorityReasoner",
+      "to": "receipt",
+      "label": "rule + actor + counters",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [1030, 400]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Capability boundary",
+      "items": [
+        "The live WebMCP manifest comes from the current authority decision",
+        "Old registrations are aborted before current capabilities are republished"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Secret boundary",
+      "items": [
+        "Challenge values remain inside the page",
+        "Run Memory and tool results expose symbolic evidence only"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Human boundary",
+      "items": [
+        "The final confirmation is never a WebMCP tool",
+        "The receipt proves safe recovery, handoff, and completion"
+      ]
+    }
+  ]
+}

@@ -26,6 +26,20 @@ At the human boundary, the static baseline still advertises all nine real agent 
 
 Run Memory lasts for one page run and resets with the mission. LAST DOOR does not claim durable user memory or production authorization enforcement.
 
+## Architecture
+
+The source-backed system map shows how the browser agent, dynamic WebMCP surface, page-held challenge, Run Memory, deterministic authority reasoner, visible UI, and final receipt fit together.
+
+[![LAST DOOR system architecture](docs/architecture/last-door-system.png)](docs/architecture/last-door-system.html)
+
+[Open the interactive system map](docs/architecture/last-door-system.html) · [View the Archify source](docs/architecture/last-door-system.architecture.json)
+
+The lifecycle map makes the two unusual success conditions explicit: a stale event returns to the safe agent path, while the final gate removes agent authority and waits for a person.
+
+[![LAST DOOR authority lifecycle](docs/architecture/last-door-authority-lifecycle.png)](docs/architecture/last-door-authority-lifecycle.html)
+
+[Open the interactive authority lifecycle](docs/architecture/last-door-authority-lifecycle.html) · [View the Archify source](docs/architecture/last-door-authority-lifecycle.lifecycle.json)
+
 ## Run the mission
 
 Open the page in ChatGPT's in-app browser, or in Chrome 149 or later with `chrome://flags/#enable-webmcp-testing` enabled.
