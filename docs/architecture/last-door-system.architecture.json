@@ -7,13 +7,13 @@
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/agentsimdev/last-door",
-      "revision": "7c00544297be812711902b1d0d1973d4d639c3a2"
+      "revision": "e6ac8d9baf4f37ebcdc91fd028c48e9d3ca8b21f"
     },
     "views": [
       {
         "id": "agent-path",
         "label": "Agent capability path",
-        "focus": ["browserAgent", "toolSurface", "toolHandlers", "runMemory", "authorityReasoner"],
+        "focus": ["browserAgent", "toolSurface", "toolHandlers", "runMemory", "policyPacks", "authorityReasoner"],
         "note": "Follow one agent action from discovery through evidence and the next compiled manifest."
       },
       {
@@ -27,6 +27,12 @@
         "label": "Human authority",
         "focus": ["authorityReasoner", "human", "visibleUi", "runMemory", "receipt"],
         "note": "The final action stays in the DOM, then becomes evidence for the final receipt."
+      },
+      {
+        "id": "policy-transfer",
+        "label": "Live policy proof",
+        "focus": ["policyPacks", "authorityReasoner", "policyLab", "toolSurface"],
+        "note": "A person selects one policy, the compiler returns four current tools, and the browser verifies the replacement manifest."
       }
     ]
   },
@@ -39,7 +45,7 @@
       "pos": [30, 250],
       "size": [150, 72],
       "sources": [
-        { "path": "app.mjs", "line": 331, "end_line": 348, "label": "Native WebMCP client path" }
+        { "path": "app.mjs", "line": 445, "end_line": 500, "label": "Native WebMCP client path" }
       ]
     },
     {
@@ -51,7 +57,7 @@
       "size": [170, 72],
       "tag": "registerTool()",
       "sources": [
-        { "path": "app.mjs", "line": 256, "end_line": 279, "label": "Dynamic tool registration" }
+        { "path": "app.mjs", "line": 337, "end_line": 428, "label": "Dynamic tool registration" }
       ]
     },
     {
@@ -62,7 +68,7 @@
       "pos": [480, 250],
       "size": [165, 72],
       "sources": [
-        { "path": "app.mjs", "line": 159, "end_line": 253, "label": "State-aware tool handlers" }
+        { "path": "app.mjs", "line": 240, "end_line": 335, "label": "State-aware tool handlers" }
       ]
     },
     {
@@ -74,20 +80,32 @@
       "size": [165, 72],
       "tag": "run-scoped",
       "sources": [
-        { "path": "domain.mjs", "line": 45, "end_line": 69, "label": "Run state and evidence" }
+        { "path": "domain.mjs", "line": 227, "end_line": 251, "label": "Run state and evidence" }
+      ]
+    },
+    {
+      "id": "policyPacks",
+      "type": "database",
+      "label": "Policy Packs",
+      "sublabel": "identity / checkout / production",
+      "pos": [710, 90],
+      "size": [165, 72],
+      "tag": "data-defined",
+      "sources": [
+        { "path": "domain.mjs", "line": 34, "end_line": 225, "label": "Three authority policy packs" }
       ]
     },
     {
       "id": "authorityReasoner",
       "type": "security",
       "label": "Authority Reasoner",
-      "sublabel": "versioned deterministic rules",
+      "sublabel": "shared deterministic compiler",
       "pos": [940, 250],
       "size": [180, 72],
       "tag": "allow / handoff / complete",
       "sources": [
-        { "path": "domain.mjs", "line": 22, "end_line": 31, "label": "Versioned authority policy" },
-        { "path": "domain.mjs", "line": 71, "end_line": 115, "label": "Decision and capability compiler" }
+        { "path": "domain.mjs", "line": 253, "end_line": 295, "label": "Decision and capability compiler" },
+        { "path": "domain.mjs", "line": 416, "end_line": 523, "label": "Policy manifest compiler" }
       ]
     },
     {
@@ -98,7 +116,7 @@
       "pos": [30, 470],
       "size": [150, 72],
       "sources": [
-        { "path": "app.mjs", "line": 422, "end_line": 426, "label": "Human DOM confirmation" }
+        { "path": "app.mjs", "line": 582, "end_line": 586, "label": "Human DOM confirmation" }
       ]
     },
     {
@@ -110,7 +128,7 @@
       "size": [170, 72],
       "tag": "DOM-only confirmation",
       "sources": [
-        { "path": "app.mjs", "line": 66, "end_line": 149, "label": "Mission and receipt UI" }
+        { "path": "app.mjs", "line": 88, "end_line": 231, "label": "Policy, mission, and receipt UI" }
       ]
     },
     {
@@ -122,8 +140,22 @@
       "size": [165, 72],
       "tag": "never returned",
       "sources": [
-        { "path": "app.mjs", "line": 197, "end_line": 227, "label": "Page-held challenge flow" },
-        { "path": "domain.mjs", "line": 149, "end_line": 184, "label": "Stale and fresh resolution" }
+        { "path": "app.mjs", "line": 278, "end_line": 308, "label": "Page-held challenge flow" },
+        { "path": "domain.mjs", "line": 329, "end_line": 364, "label": "Stale and fresh resolution" }
+      ]
+    },
+    {
+      "id": "policyLab",
+      "type": "frontend",
+      "label": "Live Policy Lab",
+      "sublabel": "select, register, verify",
+      "pos": [710, 470],
+      "size": [165, 72],
+      "tag": "4 / 4 native match",
+      "sources": [
+        { "path": "domain.mjs", "line": 476, "end_line": 523, "label": "Fail-closed lab manifest" },
+        { "path": "app.mjs", "line": 337, "end_line": 428, "label": "Register and verify manifest" },
+        { "path": "app.mjs", "line": 536, "end_line": 570, "label": "Human-selected policy load" }
       ]
     },
     {
@@ -135,8 +167,8 @@
       "size": [180, 72],
       "tag": "verifiable result",
       "sources": [
-        { "path": "domain.mjs", "line": 203, "end_line": 220, "label": "Structured run receipt" },
-        { "path": "app.mjs", "line": 117, "end_line": 149, "label": "Visible receipt rendering" }
+        { "path": "domain.mjs", "line": 383, "end_line": 399, "label": "Structured run receipt" },
+        { "path": "app.mjs", "line": 196, "end_line": 228, "label": "Visible receipt rendering" }
       ]
     }
   ],
@@ -144,7 +176,7 @@
     {
       "kind": "security-group",
       "label": "Page-owned trust boundary",
-      "wraps": ["toolSurface", "toolHandlers", "runMemory", "authorityReasoner", "visibleUi", "pageChallenge", "receipt"],
+      "wraps": ["toolSurface", "toolHandlers", "runMemory", "policyPacks", "authorityReasoner", "visibleUi", "pageChallenge", "policyLab", "receipt"],
       "pad": 24
     }
   ],
@@ -180,6 +212,15 @@
       "labelAt": [908, 246]
     },
     {
+      "id": "packs-drive-compiler",
+      "from": "policyPacks",
+      "to": "authorityReasoner",
+      "label": "rule + capability set",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
       "id": "handler-updates-ui",
       "from": "toolHandlers",
       "to": "visibleUi",
@@ -205,13 +246,22 @@
       "labelAt": [213, 466]
     },
     {
+      "id": "compiler-builds-lab-manifest",
+      "from": "authorityReasoner",
+      "to": "policyLab",
+      "label": "compile selected manifest",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
       "id": "decision-builds-receipt",
       "from": "authorityReasoner",
       "to": "receipt",
       "label": "rule + actor + counters",
       "fromSide": "bottom",
       "toSide": "top",
-      "labelAt": [1030, 400]
+      "labelAt": [1100, 410]
     }
   ],
   "cards": [
@@ -220,7 +270,7 @@
       "title": "Capability boundary",
       "items": [
         "The live WebMCP manifest comes from the current authority decision",
-        "Old registrations are aborted before current capabilities are republished"
+        "The Live Policy Lab aborts old registrations and verifies the selected four-tool manifest"
       ]
     },
     {
@@ -235,8 +285,8 @@
       "dot": "emerald",
       "title": "Human boundary",
       "items": [
-        "The final confirmation is never a WebMCP tool",
-        "The receipt proves safe recovery, handoff, and completion"
+        "Human confirmation, purchase approval, and production approval never become tools",
+        "Checkout and production handlers are read-only proofs with no external side effects"
       ]
     }
   ]
