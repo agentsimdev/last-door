@@ -4,6 +4,7 @@ import {
   availableToolNames,
   completeMagicLink,
   confirmHumanPresence,
+  createPolicyLabManifest,
   createRun,
   explainAuthority,
   getReceipt,
@@ -11,6 +12,7 @@ import {
   requestHumanPresence,
   resolveChallenge,
   runAuthorityCounterfactual,
+  runPolicyTransferMatrix,
   startRun,
 } from "./domain.mjs";
 
@@ -185,4 +187,57 @@ test("the counterfactual compares only real agent tools and preserves the human 
   assert.equal(JSON.stringify(proof).includes("270311"), false);
   assert.equal(JSON.stringify(proof).includes("482901"), false);
   assert.equal(availableToolNames(createRun()).includes("confirm_human_presence"), false);
+});
+
+test("one authority compiler transfers across three policy packs", () => {
+  const matrix = runPolicyTransferMatrix();
+
+  assert.deepEqual(matrix.cases.map(({ id }) => id), [
+    "identity-recovery",
+    "high-value-checkout",
+    "production-change",
+  ]);
+  assert.deepEqual(matrix.cases.map(({ rule }) => rule), [
+    "HUMAN_HANDOFF_PENDING",
+    "PURCHASE_APPROVAL_PENDING",
+    "PRODUCTION_APPROVAL_PENDING",
+  ]);
+  assert.deepEqual(matrix.cases.map(({ prevented }) => prevented.count), [5, 6, 4]);
+  assert.equal(matrix.cases.every(({ actor }) => actor === "human"), true);
+  assert.equal(matrix.cases.every(({ humanActionRegistered }) => humanActionRegistered === false), true);
+  assert.deepEqual(matrix.totals, {
+    policyPacks: 3,
+    staticCapabilities: 27,
+    compiledCapabilities: 12,
+    staleCapabilitiesRemoved: 15,
+    humanActionsRegistered: 0,
+  });
+});
+
+test("the live policy lab fails closed and never registers human actions", () => {
+  const expected = {
+    "identity-recovery": { current: 4, removed: 5, humanAction: "confirm_human_presence" },
+    "high-value-checkout": { current: 4, removed: 6, humanAction: "confirm_purchase" },
+    "production-change": { current: 4, removed: 4, humanAction: "approve_production_change" },
+  };
+
+  for (const [policyId, result] of Object.entries(expected)) {
+    const manifest = createPolicyLabManifest(policyId);
+
+    assert.equal(manifest.ok, true);
+    assert.equal(manifest.scope, "isolated_policy_snapshot");
+    assert.equal(manifest.decision, "handoff");
+    assert.equal(manifest.capabilities.length, result.current);
+    assert.equal(manifest.removedCapabilities.length, result.removed);
+    assert.equal(manifest.humanAction, result.humanAction);
+    assert.equal(manifest.capabilities.includes(result.humanAction), false);
+    assert.equal(manifest.humanActionRegistered, false);
+  }
+
+  assert.deepEqual(createPolicyLabManifest("unknown-policy"), {
+    ok: false,
+    policyId: "unknown-policy",
+    rule: "POLICY_PACK_REJECTED",
+    capabilities: [],
+  });
 });

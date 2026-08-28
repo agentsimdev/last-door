@@ -3,6 +3,7 @@ import {
   availableToolNames,
   completeMagicLink,
   confirmHumanPresence,
+  createPolicyLabManifest,
   createRun,
   currentGate,
   explainAuthority,
@@ -10,15 +11,18 @@ import {
   issueChallenge,
   requestHumanPresence,
   resolveChallenge,
-  runAuthorityCounterfactual,
   startRun,
-} from "./domain.mjs";
+} from "./domain.mjs?v=3";
 
 const run = createRun();
 const events = [];
 let pageHeldChallenge = null;
 let registrationControllers = [];
+let registrationGeneration = 0;
 let refreshTimer = null;
+let manifestMode = "mission";
+let activeLabManifest = null;
+let labVerification = { state: "ready", message: "NOT RUN YET" };
 
 const gateRail = document.querySelector("#gate-rail");
 const toolList = document.querySelector("#tool-list");
@@ -37,18 +41,24 @@ const nativeRun = document.querySelector("#native-run");
 const nativeReceipt = document.querySelector("#native-receipt");
 const nativeStatus = document.querySelector("#native-status");
 const nativeTrace = document.querySelector("#native-trace");
-const counterfactualRun = document.querySelector("#counterfactual-run");
-const counterfactualStage = document.querySelector("#counterfactual-stage");
-const staticCount = document.querySelector("#static-count");
-const compiledCount = document.querySelector("#compiled-count");
-const staticList = document.querySelector("#static-list");
-const compiledList = document.querySelector("#compiled-list");
-const staticVerdict = document.querySelector("#static-verdict");
-const compiledVerdict = document.querySelector("#compiled-verdict");
-const counterfactualReceipt = document.querySelector("#counterfactual-receipt");
-const counterfactualPrevented = document.querySelector("#counterfactual-prevented");
-const counterfactualEvidence = document.querySelector("#counterfactual-evidence");
-const counterfactualSummary = document.querySelector("#counterfactual-summary");
+const policyInputs = [...document.querySelectorAll('input[name="policy"]')];
+const labLoad = document.querySelector("#lab-load");
+const labStatus = document.querySelector("#lab-status");
+const labResult = document.querySelector("#lab-result");
+const labStaticCount = document.querySelector("#lab-static-count");
+const labLiveCount = document.querySelector("#lab-live-count");
+const labResultCopy = document.querySelector("#lab-result-copy");
+const labBrowserProof = document.querySelector("#lab-browser-proof");
+const labHumanProof = document.querySelector("#lab-human-proof");
+const labRemovedCount = document.querySelector("#lab-removed-count");
+const labToolList = document.querySelector("#lab-tool-list");
+const labRule = document.querySelector("#lab-rule");
+const labEvidence = document.querySelector("#lab-evidence");
+const labRemovedList = document.querySelector("#lab-removed-list");
+const missionPrepare = document.querySelector("#mission-prepare");
+const missionCopy = document.querySelector("#mission-copy");
+const missionHelp = document.querySelector("#mission-help");
+const agentPrompt = document.querySelector("#agent-prompt");
 
 function addEvent(actor, name, detail) {
   events.push({
@@ -61,6 +71,61 @@ function addEvent(actor, name, detail) {
       second: "2-digit",
     }),
   });
+}
+
+function selectedPolicyManifest() {
+  const policyId = policyInputs.find((input) => input.checked)?.value ?? "identity-recovery";
+  return createPolicyLabManifest(policyId);
+}
+
+function currentManifestNames() {
+  if (typeof document.modelContext?.registerTool !== "function") return [];
+  return manifestMode === "lab" && activeLabManifest
+    ? activeLabManifest.capabilities
+    : availableToolNames(run);
+}
+
+function renderPolicyLab() {
+  const selected = selectedPolicyManifest();
+  const isActive = manifestMode === "lab" && activeLabManifest?.policyId === selected.policyId;
+  const isRegistered = isActive && !["unsupported", "fail"].includes(labVerification.state);
+
+  labStaticCount.textContent = String(selected.staticCapabilities.length).padStart(2, "0");
+  labLiveCount.textContent = isRegistered ? String(selected.capabilities.length).padStart(2, "0") : "--";
+  labRemovedCount.textContent = selected.removedCapabilities.length;
+  labResultCopy.textContent = isRegistered
+    ? `Only ${selected.capabilities.length} current tools are advertised to the agent.`
+    : "Load the policy to publish only the current tools.";
+  labBrowserProof.textContent = isActive ? labVerification.message : "NOT LOADED";
+  labBrowserProof.dataset.state = isActive ? labVerification.state : "ready";
+  labHumanProof.textContent = isRegistered
+    ? "The human-only action is absent from the live manifest."
+    : "The human-only action must never appear.";
+  labResult.dataset.state = isActive ? labVerification.state : "ready";
+  labToolList.innerHTML = selected.capabilities
+    .map((name) => `<li><code>${name}</code></li>`)
+    .join("");
+  labRule.textContent = `${selected.rule} / ${selected.actor}`;
+  labEvidence.textContent = selected.evidence.join(" · ");
+  labRemovedList.textContent = selected.removedCapabilities.join(" · ");
+  labLoad.textContent = isActive && labVerification.state === "unsupported"
+    ? "WEBMCP IS REQUIRED FOR THIS PROOF"
+    : isActive && labVerification.state !== "fail"
+    ? `${selected.label.toUpperCase()} POLICY IS LIVE`
+    : `${isActive ? "RETRY" : "LOAD"} ${selected.label.toUpperCase()} POLICY IN WEBMCP`;
+  labLoad.disabled = run.started || (isActive && labVerification.state !== "fail");
+
+  if (run.started) {
+    labStatus.textContent = "A mission is already running. Reset it before changing the browser’s policy.";
+  } else if (isActive && labVerification.state === "unsupported") {
+    labStatus.textContent = "This browser does not expose WebMCP. Open the page in a WebMCP-enabled browser to run the live proof.";
+  } else if (isActive && labVerification.state === "fail") {
+    labStatus.textContent = "The browser’s tool list did not match. Retry the policy load.";
+  } else if (isActive) {
+    labStatus.textContent = `${selected.label} is live in this browser. Old registrations were revoked.`;
+  } else {
+    labStatus.textContent = "Ready to replace the current tool list with this scenario’s safe manifest.";
+  }
 }
 
 function render() {
@@ -80,13 +145,15 @@ function render() {
       </article>`;
   }).join("");
 
-  const names = availableToolNames(run);
+  const names = currentManifestNames();
   toolCount.textContent = String(names.length).padStart(2, "0");
   toolList.innerHTML = names
     .map((name, index) => `<li><span class="mono">${String(index + 1).padStart(2, "0")}</span><code>${name}</code></li>`)
     .join("");
 
-  const authority = explainAuthority(run);
+  const authority = manifestMode === "lab" && activeLabManifest
+    ? activeLabManifest
+    : explainAuthority(run);
   authorityDecision.textContent = `${authority.decision} / ${authority.actor ?? "none"}`;
   authorityDecision.dataset.decision = authority.decision;
   authorityRule.textContent = authority.rule;
@@ -108,11 +175,23 @@ function render() {
   const result = getReceipt(run);
   missionState.textContent = result.status === "passed"
     ? "MISSION PASSED"
-    : run.humanRequested
+    : manifestMode === "lab"
+      ? "POLICY PROOF ACTIVE"
+      : run.humanRequested
       ? "HUMAN REQUIRED"
       : result.status === "running"
         ? `DOOR ${String(run.gateIndex + 1).padStart(2, "0")} ACTIVE`
         : "WAITING FOR AGENT";
+
+  missionHelp.textContent = result.status === "passed"
+    ? "MISSION PASSED"
+    : run.humanRequested
+      ? "YOUR CONFIRMATION IS NEEDED"
+      : result.status === "running"
+        ? "AGENT MISSION IN PROGRESS"
+        : manifestMode === "lab"
+          ? "POLICY PROOF ACTIVE — PREPARE THE MISSION NEXT"
+          : "MISSION TOOLS READY";
 
   receipt.hidden = !run.complete;
   if (run.complete) {
@@ -148,6 +227,8 @@ function render() {
         </a>
       </div>`;
   }
+
+  renderPolicyLab();
 }
 
 function afterTool() {
@@ -253,28 +334,96 @@ function toolDefinitions() {
   return availableToolNames(run).map((name) => ({ name, ...definitions[name] }));
 }
 
+function labToolDefinitions(manifest) {
+  return manifest.capabilities.map((name) => ({
+    name,
+    description: `Proof-only ${manifest.label} capability. Returns an isolated authority receipt and has no external side effects.`,
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    annotations: { readOnlyHint: true, untrustedContentHint: false },
+    execute: async () => ({
+      ok: true,
+      scope: manifest.scope,
+      policyId: manifest.policyId,
+      capability: name,
+      rule: manifest.rule,
+      actor: manifest.actor,
+      externalSideEffect: false,
+    }),
+  }));
+}
+
+async function verifyNativeManifest(expectedNames) {
+  if (typeof document.modelContext?.getTools !== "function") {
+    return { state: "warning", message: "REGISTERED / NATIVE LIST UNAVAILABLE" };
+  }
+
+  const expected = [...expectedNames].sort();
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const actual = (await document.modelContext.getTools()).map(({ name }) => name).sort();
+    if (JSON.stringify(actual) === JSON.stringify(expected)) {
+      return { state: "pass", message: `PASS / ${actual.length} OF ${expected.length} TOOLS MATCH` };
+    }
+    await abortableDelay(50);
+  }
+
+  return { state: "fail", message: "FAIL / BROWSER LIST DOES NOT MATCH" };
+}
+
 async function registerTools() {
+  const generation = ++registrationGeneration;
   registrationControllers.forEach((controller) => controller.abort());
   registrationControllers = [];
+  const controllers = [];
 
   if (typeof document.modelContext?.registerTool !== "function") {
     webmcpStatus.textContent = "WEBMCP NOT DETECTED";
     webmcpStatus.dataset.state = "warning";
-    return;
+    if (manifestMode === "lab") {
+      labVerification = { state: "unsupported", message: "WEBMCP NOT AVAILABLE" };
+      render();
+    }
+    return false;
   }
 
   try {
-    for (const tool of toolDefinitions()) {
+    const definitions = manifestMode === "lab" && activeLabManifest
+      ? labToolDefinitions(activeLabManifest)
+      : toolDefinitions();
+    for (const tool of definitions) {
       const controller = new AbortController();
       await document.modelContext.registerTool(tool, { signal: controller.signal });
-      registrationControllers.push(controller);
+      if (generation !== registrationGeneration) {
+        controller.abort();
+        controllers.forEach((item) => item.abort());
+        return false;
+      }
+      controllers.push(controller);
+      registrationControllers = controllers;
     }
     webmcpStatus.textContent = `CONNECTED / ${String(registrationControllers.length).padStart(2, "0")} TOOLS`;
     webmcpStatus.dataset.state = "ready";
+    if (manifestMode === "lab" && activeLabManifest) {
+      const verification = await verifyNativeManifest(activeLabManifest.capabilities);
+      if (generation !== registrationGeneration) {
+        controllers.forEach((controller) => controller.abort());
+        return false;
+      }
+      labVerification = verification;
+    }
+    render();
+    return true;
   } catch (error) {
+    controllers.forEach((controller) => controller.abort());
+    if (generation !== registrationGeneration) return false;
+    registrationControllers = [];
     webmcpStatus.textContent = "REGISTRATION FAILED";
     webmcpStatus.dataset.state = "error";
+    if (manifestMode === "lab") {
+      labVerification = { state: "fail", message: "FAIL / REGISTRATION ERROR" };
+      render();
+    }
     console.error(error);
+    return false;
   }
 }
 
@@ -287,41 +436,6 @@ function abortableDelay(ms, signal) {
       reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
     }, { once: true });
   });
-}
-
-function renderCounterfactualList(target, capabilities, compiledCapabilities) {
-  target.replaceChildren(...capabilities.map((name) => {
-    const item = document.createElement("li");
-    const state = compiledCapabilities.includes(name) ? "current" : "stale";
-    item.dataset.state = state === "current" ? "allowed" : "stale";
-    item.setAttribute("aria-label", `${name}: ${state}`);
-    const code = document.createElement("code");
-    code.textContent = name;
-    item.append(code);
-    return item;
-  }));
-}
-
-function showAuthorityCounterfactual() {
-  const proof = runAuthorityCounterfactual();
-
-  staticCount.textContent = String(proof.static.capabilities.length).padStart(2, "0");
-  compiledCount.textContent = String(proof.compiled.capabilities.length).padStart(2, "0");
-  renderCounterfactualList(staticList, proof.static.capabilities, proof.compiled.capabilities);
-  renderCounterfactualList(compiledList, proof.compiled.capabilities, proof.compiled.capabilities);
-
-  staticVerdict.textContent = `${proof.prevented.count} STALE CAPABILITIES ADVERTISED`;
-  staticVerdict.dataset.state = "fail";
-  compiledVerdict.textContent = `${proof.rule} / ${proof.actor}`;
-  compiledVerdict.dataset.state = "pass";
-  counterfactualPrevented.textContent = `${proof.prevented.count} stale capabilities removed`;
-  counterfactualEvidence.textContent = `${proof.evidence.length} redacted facts / human confirmation never registered / 0 challenge values returned`;
-  counterfactualSummary.textContent = `Proof complete · ${proof.prevented.count} stale capabilities removed.`;
-  counterfactualSummary.hidden = false;
-  counterfactualReceipt.hidden = false;
-  counterfactualStage.dataset.state = "proven";
-  counterfactualRun.textContent = "Proof complete";
-  counterfactualRun.disabled = true;
 }
 
 function nativeAssert(condition, message) {
@@ -419,6 +533,52 @@ async function initializeNativeTest() {
   }
 }
 
+async function loadPolicyLab() {
+  if (run.started) {
+    renderPolicyLab();
+    return;
+  }
+
+  const manifest = selectedPolicyManifest();
+  if (!manifest.ok) {
+    labStatus.textContent = "This policy was rejected, so no tools were registered.";
+    return;
+  }
+
+  manifestMode = "lab";
+  activeLabManifest = manifest;
+  labVerification = { state: "checking", message: "CHECKING BROWSER TOOL LIST" };
+  addEvent("browser", "policy loaded", `${manifest.label}: ${manifest.capabilities.length} current tools.`);
+  render();
+  await registerTools();
+}
+
+async function prepareMission() {
+  manifestMode = "mission";
+  activeLabManifest = null;
+  labVerification = { state: "ready", message: "NOT RUN YET" };
+  addEvent("browser", "mission prepared", "Identity-recovery tools published.");
+  missionPrepare.disabled = true;
+  missionPrepare.textContent = "PREPARING MISSION TOOLS";
+  render();
+  const prepared = await registerTools();
+  missionPrepare.disabled = prepared;
+  missionPrepare.textContent = prepared ? "MISSION TOOLS READY" : "RETRY MISSION SETUP";
+  missionHelp.textContent = prepared
+    ? "MISSION TOOLS READY — GIVE THE PROMPT TO YOUR AGENT"
+    : "WEBMCP IS REQUIRED TO RUN THE AGENT MISSION";
+}
+
+async function copyAgentPrompt() {
+  try {
+    await navigator.clipboard.writeText(agentPrompt.textContent.trim());
+    missionCopy.textContent = "PROMPT COPIED";
+    missionHelp.textContent = "PROMPT COPIED — GIVE IT TO YOUR AGENT";
+  } catch {
+    missionCopy.textContent = "COPY FAILED — SELECT THE PROMPT";
+  }
+}
+
 humanConfirm.addEventListener("click", () => {
   const result = confirmHumanPresence(run);
   addEvent("human", "presence confirmed", result.ok ? "Door 03 cleared. Mission passed." : result.code);
@@ -435,7 +595,10 @@ window.addEventListener("beforeunload", () => {
 
 nativeRun.addEventListener("click", runNativePath);
 nativeReceipt.addEventListener("click", readNativeReceipt);
-counterfactualRun.addEventListener("click", showAuthorityCounterfactual);
+labLoad.addEventListener("click", loadPolicyLab);
+missionPrepare.addEventListener("click", prepareMission);
+missionCopy.addEventListener("click", copyAgentPrompt);
+policyInputs.forEach((input) => input.addEventListener("change", renderPolicyLab));
 
 render();
 void registerTools();

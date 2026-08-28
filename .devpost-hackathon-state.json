@@ -1,0 +1,42 @@
+{
+  "plugin": "devpost-hackathon",
+  "version": 2,
+  "hackathon": {
+    "slug": "webmcp",
+    "name": "The WebMCP Challenge",
+    "url": "https://webmcp.devpost.com",
+    "selected": true,
+    "source": "known"
+  },
+  "participant": {
+    "name": "",
+    "display_name": ""
+  },
+  "project": {
+    "name": "LAST DOOR",
+    "summary": "When evidence changes, LAST DOOR rebuilds the WebMCP tool surface and proves why the agent continued, recovered, or stopped.",
+    "ai_usage": "ChatGPT's in-app browser acts as the WebMCP agent under test; deterministic page-owned rules control authority and evidence.",
+    "codex_usage": "Codex supported implementation, evaluation, QA, release verification, submission drafting, and source-backed Archify diagrams."
+  },
+  "completed_stages": [
+    "start-hackathon",
+    "review",
+    "resources",
+    "prepare-submission",
+    "submit-project"
+  ],
+  "rules_acknowledged": true,
+  "learning": {
+    "status": "not-started",
+    "current_step": "",
+    "completed_steps": [],
+    "plan_file": "",
+    "checklist_file": ""
+  },
+  "submission": {
+    "draft_file": "devpost-submission.md",
+    "status": "submitted"
+  },
+  "current_stage": "submit-project",
+  "next_command": "hackathon-map"
+}

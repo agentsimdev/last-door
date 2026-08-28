@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1280, initial-scale=1">
+    <title>LAST DOOR YouTube thumbnail</title>
+    <style>
+      @font-face {
+        font-family: "IBM Plex Mono";
+        src: url("../videos/last-door-demo/capture/assets/fonts/IBM_Plex_Mono_Medium.ttf") format("truetype");
+        font-weight: 500 700;
+      }
+
+      :root {
+        color-scheme: dark;
+        --ink: #081116;
+        --bone: #faf9f7;
+        --cyan: #00e0ff;
+        --coral: #ff6f6b;
+        --green: #39f49a;
+        --line: #29404a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1280px;
+        height: 720px;
+        margin: 0;
+        overflow: hidden;
+        background: var(--ink);
+      }
+
+      body {
+        position: relative;
+        color: var(--bone);
+        font-family: "Avenir Next", Avenir, Helvetica, Arial, sans-serif;
+      }
+
+      .frame {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        padding: 48px 52px 42px;
+        border: 2px solid var(--line);
+      }
+
+      .frame::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 9px;
+        height: 100%;
+        background: var(--cyan);
+        content: "";
+      }
+
+      .story {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        justify-content: space-between;
+        padding-right: 42px;
+      }
+
+      .eyebrow,
+      .proof-kicker,
+      .counter-label,
+      .receipt,
+      .brand-copy,
+      .verdict {
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        color: var(--cyan);
+        font-size: 18px;
+        letter-spacing: 0.14em;
+      }
+
+      .eyebrow::before {
+        width: 42px;
+        height: 4px;
+        background: var(--cyan);
+        content: "";
+      }
+
+      h1 {
+        max-width: 680px;
+        margin: 24px 0 0;
+        font-size: 91px;
+        font-weight: 800;
+        line-height: 0.91;
+        letter-spacing: -0.06em;
+        text-transform: uppercase;
+      }
+
+      h1 .stop {
+        color: var(--cyan);
+      }
+
+      .bottom {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 28px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand img {
+        display: block;
+        width: 42px;
+        height: 34px;
+      }
+
+      .brand-name {
+        font-size: 27px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .brand-name span {
+        color: var(--cyan);
+      }
+
+      .brand-copy {
+        margin-top: 5px;
+        color: #a9bbc2;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+      }
+
+      .verdict {
+        padding-bottom: 4px;
+        color: var(--green);
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        white-space: nowrap;
+      }
+
+      .proof {
+        position: relative;
+        z-index: 1;
+        align-self: center;
+        height: 568px;
+        overflow: hidden;
+        border: 3px solid var(--cyan);
+        background: #0b171d;
+      }
+
+      .proof::before {
+        position: absolute;
+        inset: 0;
+        background: url("../videos/last-door-demo/assets/counterfactual-proof.png") center / cover no-repeat;
+        opacity: 0.12;
+        content: "";
+      }
+
+      .proof::after {
+        position: absolute;
+        inset: 0;
+        border: 12px solid #0b171d;
+        content: "";
+        pointer-events: none;
+      }
+
+      .proof-inner {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        padding: 34px 34px 30px;
+      }
+
+      .proof-kicker {
+        color: #a9bbc2;
+        font-size: 14px;
+        letter-spacing: 0.15em;
+      }
+
+      .counters {
+        display: grid;
+        flex: 1;
+        grid-template-columns: 1fr 72px 1fr;
+        align-items: center;
+        margin-top: 5px;
+      }
+
+      .counter {
+        text-align: center;
+      }
+
+      .number {
+        font-size: 132px;
+        font-weight: 800;
+        line-height: 0.8;
+        letter-spacing: -0.08em;
+      }
+
+      .counter:first-child .number {
+        color: var(--coral);
+      }
+
+      .counter:last-child .number {
+        color: var(--cyan);
+      }
+
+      .counter-label {
+        margin-top: 21px;
+        color: #c6d2d6;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+      }
+
+      .arrow {
+        color: var(--bone);
+        font-size: 55px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .receipt {
+        padding: 18px 20px;
+        border-left: 5px solid var(--green);
+        background: #09231d;
+        color: var(--green);
+        font-size: 18px;
+        line-height: 1.25;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+
+      .human {
+        margin-top: 15px;
+        padding: 13px 16px;
+        border: 1px solid #58717a;
+        background: var(--ink);
+        color: var(--bone);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .human strong {
+        color: var(--cyan);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="frame">
+      <section class="story">
+        <div>
+          <div class="eyebrow">Last Door / WebMCP</div>
+          <h1>Can it know<br>when to <span class="stop">stop?</span></h1>
+        </div>
+
+        <div class="bottom">
+          <div class="brand">
+            <img src="../videos/last-door-demo/assets/agentsim-logo-mark.svg" alt="">
+            <div>
+              <div class="brand-name">Agent<span>SIM</span></div>
+              <div class="brand-copy">Trust continuity test</div>
+            </div>
+          </div>
+          <div class="verdict">Stop is a valid verdict</div>
+        </div>
+      </section>
+
+      <section class="proof" aria-label="Same evidence changes the agent tool surface from nine tools to four">
+        <div class="proof-inner">
+          <div class="proof-kicker">Same evidence / two tool surfaces</div>
+          <div class="counters">
+            <div class="counter">
+              <div class="number">09</div>
+              <div class="counter-label">Static tools</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="counter">
+              <div class="number">04</div>
+              <div class="counter-label">Current tools</div>
+            </div>
+          </div>
+          <div class="receipt">5 stale capabilities removed</div>
+          <div class="human">Final action: <strong>human</strong></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

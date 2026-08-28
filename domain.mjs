@@ -19,17 +19,6 @@ export const GATES = [
   },
 ];
 
-const AUTHORITY_POLICY = {
-  version: "1",
-  rules: {
-    MISSION_CAN_START: { decision: "allow", actor: "agent" },
-    AGENT_OWNS_ACTIVE_GATE: { decision: "allow", actor: "agent" },
-    HUMAN_PRESENCE_REQUIRED: { decision: "handoff", actor: "human" },
-    HUMAN_HANDOFF_PENDING: { decision: "handoff", actor: "human" },
-    RUN_COMPLETE: { decision: "complete", actor: null },
-  },
-};
-
 const STATIC_AGENT_CAPABILITIES = Object.freeze([
   "start_auth_mission",
   "inspect_current_gate",
@@ -41,6 +30,199 @@ const STATIC_AGENT_CAPABILITIES = Object.freeze([
   "get_handoff_status",
   "get_run_receipt",
 ]);
+
+const AUTHORITY_POLICY = {
+  id: "identity-recovery",
+  label: "Identity recovery",
+  audience: "Identity and security teams",
+  version: "1",
+  humanAction: "confirm_human_presence",
+  staticCapabilities: STATIC_AGENT_CAPABILITIES,
+  ready: {
+    decision: "allow",
+    actor: "agent",
+    rule: "MISSION_CAN_START",
+    capabilities: ["start_auth_mission", "explain_authority_decision", "get_run_receipt"],
+  },
+  complete: {
+    decision: "complete",
+    actor: null,
+    rule: "RUN_COMPLETE",
+    capabilities: ["explain_authority_decision", "get_run_receipt"],
+  },
+  gates: {
+    "magic-link": {
+      owner: "agent",
+      active: {
+        decision: "allow",
+        actor: "agent",
+        rule: "AGENT_OWNS_ACTIVE_GATE",
+        capabilities: [
+          "inspect_current_gate",
+          "explain_authority_decision",
+          "get_run_receipt",
+          "complete_controlled_magic_link",
+        ],
+      },
+    },
+    "stale-challenge": {
+      owner: "agent",
+      active: {
+        decision: "allow",
+        actor: "agent",
+        rule: "AGENT_OWNS_ACTIVE_GATE",
+        capabilities: [
+          "inspect_current_gate",
+          "explain_authority_decision",
+          "get_run_receipt",
+          "wait_for_challenge_event",
+          "resolve_current_challenge",
+        ],
+      },
+    },
+    "human-presence": {
+      owner: "human",
+      active: {
+        decision: "handoff",
+        actor: "human",
+        rule: "HUMAN_PRESENCE_REQUIRED",
+        capabilities: [
+          "inspect_current_gate",
+          "explain_authority_decision",
+          "get_run_receipt",
+          "request_human_presence",
+        ],
+      },
+      waiting: {
+        decision: "handoff",
+        actor: "human",
+        rule: "HUMAN_HANDOFF_PENDING",
+        capabilities: [
+          "inspect_current_gate",
+          "explain_authority_decision",
+          "get_run_receipt",
+          "get_handoff_status",
+        ],
+      },
+    },
+  },
+};
+
+const ISOLATED_POLICY_PACKS = [
+  {
+    id: "high-value-checkout",
+    label: "High-value checkout",
+    audience: "Commerce teams",
+    version: "1",
+    humanAction: "confirm_purchase",
+    staticCapabilities: [
+      "start_checkout_review",
+      "search_catalog",
+      "update_cart",
+      "apply_offer",
+      "choose_delivery",
+      "request_purchase_approval",
+      "inspect_order",
+      "explain_authority_decision",
+      "get_order_receipt",
+      "get_purchase_approval_status",
+    ],
+    gates: {
+      "purchase-approval": {
+        owner: "human",
+        active: {
+          decision: "handoff",
+          actor: "human",
+          rule: "PURCHASE_APPROVAL_REQUIRED",
+          capabilities: [
+            "inspect_order",
+            "explain_authority_decision",
+            "get_order_receipt",
+            "request_purchase_approval",
+          ],
+        },
+        waiting: {
+          decision: "handoff",
+          actor: "human",
+          rule: "PURCHASE_APPROVAL_PENDING",
+          capabilities: [
+            "inspect_order",
+            "explain_authority_decision",
+            "get_order_receipt",
+            "get_purchase_approval_status",
+          ],
+        },
+      },
+    },
+    snapshot: {
+      started: true,
+      complete: false,
+      gate: "purchase-approval",
+      handoffRequested: true,
+      evidence: [
+        "CART_REVIEWED",
+        "TOTAL_CHANGED",
+        "RISK_REVIEW_REQUIRED",
+        "HUMAN_APPROVAL_REQUESTED",
+      ],
+    },
+  },
+  {
+    id: "production-change",
+    label: "Production change",
+    audience: "Developer platform teams",
+    version: "1",
+    humanAction: "approve_production_change",
+    staticCapabilities: [
+      "start_change_review",
+      "inspect_deployment",
+      "run_preflight_checks",
+      "prepare_change_plan",
+      "request_production_approval",
+      "explain_authority_decision",
+      "get_change_receipt",
+      "get_production_approval_status",
+    ],
+    gates: {
+      "production-approval": {
+        owner: "human",
+        active: {
+          decision: "handoff",
+          actor: "human",
+          rule: "PRODUCTION_APPROVAL_REQUIRED",
+          capabilities: [
+            "inspect_deployment",
+            "explain_authority_decision",
+            "get_change_receipt",
+            "request_production_approval",
+          ],
+        },
+        waiting: {
+          decision: "handoff",
+          actor: "human",
+          rule: "PRODUCTION_APPROVAL_PENDING",
+          capabilities: [
+            "inspect_deployment",
+            "explain_authority_decision",
+            "get_change_receipt",
+            "get_production_approval_status",
+          ],
+        },
+      },
+    },
+    snapshot: {
+      started: true,
+      complete: false,
+      gate: "production-approval",
+      handoffRequested: true,
+      evidence: [
+        "PREFLIGHT_PASSED",
+        "BLAST_RADIUS_REVIEWED",
+        "HUMAN_APPROVAL_REQUESTED",
+      ],
+    },
+  },
+];
 
 export function createRun() {
   return {
@@ -68,47 +250,45 @@ function remember(run, fact) {
   if (!run.evidence.includes(fact)) run.evidence.push(fact);
 }
 
-function authorityDecision(run, rule, gate, capabilities) {
+function compileAuthority(policy, state) {
+  let gate = null;
+  let result;
+
+  if (!state.started) result = policy.ready;
+  else if (state.complete) result = policy.complete;
+  else {
+    gate = state.gate;
+    const gatePolicy = policy.gates[gate];
+    if (!gatePolicy) throw new Error(`Unknown authority gate: ${gate}`);
+    result = gatePolicy.owner === "human" && state.handoffRequested
+      ? gatePolicy.waiting
+      : gatePolicy.active;
+  }
+
+  if (!result) throw new Error(`Authority policy is incomplete for gate: ${gate}`);
   return {
-    policyVersion: AUTHORITY_POLICY.version,
-    ...AUTHORITY_POLICY.rules[rule],
+    policyVersion: policy.version,
+    decision: result.decision,
+    actor: result.actor,
     gate,
-    rule,
-    evidence: [...run.evidence],
-    capabilities,
+    rule: result.rule,
+    evidence: [...state.evidence],
+    capabilities: [...result.capabilities],
+  };
+}
+
+function authorityState(run) {
+  return {
+    started: run.started,
+    complete: run.complete,
+    gate: currentGate(run)?.id ?? null,
+    handoffRequested: run.humanRequested,
+    evidence: run.evidence,
   };
 }
 
 export function explainAuthority(run) {
-  if (!run.started) {
-    return authorityDecision(run, "MISSION_CAN_START", null, [
-      "start_auth_mission",
-      "explain_authority_decision",
-      "get_run_receipt",
-    ]);
-  }
-
-  if (run.complete) {
-    return authorityDecision(run, "RUN_COMPLETE", null, [
-      "explain_authority_decision",
-      "get_run_receipt",
-    ]);
-  }
-
-  const gate = currentGate(run);
-  const capabilities = ["inspect_current_gate", "explain_authority_decision", "get_run_receipt"];
-  if (gate.id === "magic-link") capabilities.push("complete_controlled_magic_link");
-  if (gate.id === "stale-challenge") {
-    capabilities.push("wait_for_challenge_event", "resolve_current_challenge");
-  }
-  if (gate.id === "human-presence") {
-    capabilities.push(run.humanRequested ? "get_handoff_status" : "request_human_presence");
-  }
-
-  const rule = gate.owner === "human"
-    ? run.humanRequested ? "HUMAN_HANDOFF_PENDING" : "HUMAN_PRESENCE_REQUIRED"
-    : "AGENT_OWNS_ACTIVE_GATE";
-  return authorityDecision(run, rule, gate.id, capabilities);
+  return compileAuthority(AUTHORITY_POLICY, authorityState(run));
 }
 
 export function availableToolNames(run) {
@@ -219,7 +399,7 @@ export function getReceipt(run) {
   };
 }
 
-export function runAuthorityCounterfactual() {
+function createHumanBoundaryRun() {
   const comparisonRun = createRun();
   startRun(comparisonRun);
   completeMagicLink(comparisonRun);
@@ -230,36 +410,114 @@ export function runAuthorityCounterfactual() {
   resolveChallenge(comparisonRun, fresh.code);
   requestHumanPresence(comparisonRun);
 
-  const authority = explainAuthority(comparisonRun);
-  const staticCapabilities = [...STATIC_AGENT_CAPABILITIES];
+  return comparisonRun;
+}
+
+function policyTransferProof(policy, state) {
+  const authority = compileAuthority(policy, state);
+  const staticCapabilities = [...policy.staticCapabilities];
   const compiledCapabilities = [...authority.capabilities];
   const preventedCapabilities = staticCapabilities.filter(
     (name) => !compiledCapabilities.includes(name),
   );
+  const humanActionRegistered =
+    staticCapabilities.includes(policy.humanAction) ||
+    compiledCapabilities.includes(policy.humanAction);
 
   return {
-    baseline: "REGISTER_EVERY_AGENT_TOOL_ONCE",
-    verdict: "STATIC_CAPABILITIES_STALE",
+    id: policy.id,
+    label: policy.label,
+    audience: policy.audience,
     gate: authority.gate,
+    decision: authority.decision,
     rule: authority.rule,
     actor: authority.actor,
     evidence: [...authority.evidence],
-    static: {
-      capabilities: staticCapabilities,
-      exposesHumanConfirmation: staticCapabilities.includes("confirm_human_presence"),
-    },
-    compiled: {
-      capabilities: compiledCapabilities,
-      exposesHumanConfirmation: compiledCapabilities.includes("confirm_human_presence"),
-    },
-    invariants: {
-      humanConfirmationRegistered:
-        staticCapabilities.includes("confirm_human_presence") ||
-        compiledCapabilities.includes("confirm_human_presence"),
-    },
+    humanAction: policy.humanAction,
+    humanActionRegistered,
+    static: { capabilities: staticCapabilities },
+    compiled: { capabilities: compiledCapabilities },
     prevented: {
       count: preventedCapabilities.length,
       capabilities: preventedCapabilities,
     },
+  };
+}
+
+export function runAuthorityCounterfactual() {
+  const comparisonRun = createHumanBoundaryRun();
+  const proof = policyTransferProof(AUTHORITY_POLICY, authorityState(comparisonRun));
+
+  return {
+    baseline: "REGISTER_EVERY_AGENT_TOOL_ONCE",
+    verdict: "STATIC_CAPABILITIES_STALE",
+    gate: proof.gate,
+    rule: proof.rule,
+    actor: proof.actor,
+    evidence: [...proof.evidence],
+    static: {
+      capabilities: [...proof.static.capabilities],
+      exposesHumanConfirmation: proof.static.capabilities.includes(AUTHORITY_POLICY.humanAction),
+    },
+    compiled: {
+      capabilities: [...proof.compiled.capabilities],
+      exposesHumanConfirmation: proof.compiled.capabilities.includes(AUTHORITY_POLICY.humanAction),
+    },
+    invariants: {
+      humanConfirmationRegistered: proof.humanActionRegistered,
+    },
+    prevented: {
+      count: proof.prevented.count,
+      capabilities: [...proof.prevented.capabilities],
+    },
+  };
+}
+
+export function runPolicyTransferMatrix() {
+  const identityRun = createHumanBoundaryRun();
+  const cases = [
+    policyTransferProof(AUTHORITY_POLICY, authorityState(identityRun)),
+    ...ISOLATED_POLICY_PACKS.map((policy) => policyTransferProof(policy, policy.snapshot)),
+  ];
+
+  return {
+    cases,
+    totals: {
+      policyPacks: cases.length,
+      staticCapabilities: cases.reduce((sum, item) => sum + item.static.capabilities.length, 0),
+      compiledCapabilities: cases.reduce((sum, item) => sum + item.compiled.capabilities.length, 0),
+      staleCapabilitiesRemoved: cases.reduce((sum, item) => sum + item.prevented.count, 0),
+      humanActionsRegistered: cases.filter((item) => item.humanActionRegistered).length,
+    },
+  };
+}
+
+export function createPolicyLabManifest(policyId) {
+  const proof = runPolicyTransferMatrix().cases.find(({ id }) => id === policyId);
+  if (!proof) {
+    return {
+      ok: false,
+      policyId,
+      rule: "POLICY_PACK_REJECTED",
+      capabilities: [],
+    };
+  }
+
+  return {
+    ok: true,
+    scope: "isolated_policy_snapshot",
+    policyId: proof.id,
+    label: proof.label,
+    audience: proof.audience,
+    gate: proof.gate,
+    decision: proof.decision,
+    rule: proof.rule,
+    actor: proof.actor,
+    evidence: [...proof.evidence],
+    humanAction: proof.humanAction,
+    humanActionRegistered: proof.humanActionRegistered,
+    staticCapabilities: [...proof.static.capabilities],
+    capabilities: [...proof.compiled.capabilities],
+    removedCapabilities: [...proof.prevented.capabilities],
   };
 }

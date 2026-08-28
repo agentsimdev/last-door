@@ -99,3 +99,29 @@ The person completed door 03 on the same public run after the agent requested th
 ```
 
 Completed release runs showed no unexpected product behavior.
+
+## Live Policy Lab iteration
+
+The 30/30 soak established repeatability for one auth policy. It did not test whether the authority compiler could express a different workflow. The next local candidate therefore adds a human-selected Live Policy Lab instead of repeating the same run again.
+
+- Three policy packs: identity recovery, high-value checkout, and production change.
+- 27 static agent capabilities across the packs.
+- 12 current capabilities after compilation at each human boundary.
+- 15 stale capabilities removed.
+- Zero human actions registered.
+- The live identity mission keeps its existing tool names and behavior.
+- Checkout and production change are deterministic policy snapshots with read-only proof handlers, not live integrations.
+- Loading a scenario aborts the previous registrations and publishes only that scenario's four compiled tools through `document.modelContext.registerTool()`.
+- Native `getTools()` verification passed `4/4` for identity recovery, high-value checkout, and production change; no human action appeared.
+
+The ninth domain test covers fail-closed policy lookup, every pack's compiled and removed counts, and the human-action invariant. Desktop in-app browser QA verified live revocation and mission restoration. Mobile QA verified the responsive flow and a clear fallback when WebMCP is unavailable.
+
+### Video transfer proof
+
+The local video candidate now uses the existing 30/30 verifier receipt as the bridge into the transfer question. The closing frame shows identity recovery `09 → 04`, high-value checkout `10 → 04`, production change `08 → 04`, and the aggregate `3 / 15 / 0` receipt.
+
+- Composition duration: 98.871 seconds.
+- HyperFrames check: passed runtime, layout, motion, and contrast gates.
+- Final-frame snapshots: no clipping, overflow, or new contrast warnings.
+- Public YouTube video: unchanged.
+- Narration: current Marcia line remains; the transfer evidence is music-only because the same-voice HeyGen request returned `HTTP 402 insufficient_credit`.

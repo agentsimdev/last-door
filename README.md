@@ -6,17 +6,29 @@ LAST DOOR is a WebMCP authority compiler and trust continuity test for teams tha
 
 The receipt records what the agent completed and which authority rule controlled the final decision. It also includes the redacted evidence facts remembered during the run.
 
+## Who it is for
+
+Browser-agent, identity, commerce, and developer platform teams can use LAST DOOR as a release test for stateful flows. It catches a narrow but costly failure: an old tool remains callable after the evidence that allowed it has changed.
+
+The reusable contract has four parts: the page supplies the active gate and redacted facts, the rule names the responsible actor, the decision publishes the current WebMCP manifest, and the receipt explains the result. The live mission proves identity recovery. A Live Policy Lab then registers compiled identity, checkout, and production-change manifests in the browser so judges can observe old tools being revoked. The latter two remain proof-only snapshots, not live integrations.
+
 ## Why WebMCP
 
 Authentication is stateful. Available actions change after every result, and some actions should never be delegated. LAST DOOR evaluates an explicit authority ontology after each result, then uses WebMCP to publish only the capabilities that decision allows.
 
 The page registers tools with `document.modelContext.registerTool()`. It aborts old registrations whenever the decision changes, then publishes the new manifest. The read-only `explain_authority_decision` tool reports the rule, actor, evidence, and resulting capabilities. The human confirmation button is never registered as a tool.
 
-## The counterfactual
+## Live Policy Lab
 
-A naive WebMCP implementation can register every agent tool once and leave those tools callable after the state that made them relevant has passed. LAST DOOR includes an isolated comparison that runs the same auth incident against that static baseline and the evidence-compiled authority model.
+A naive WebMCP implementation can register every agent tool once and leave those tools callable after the state that made them relevant has passed. The Live Policy Lab makes that difference inspectable: choose a scenario, load it, and compare the static list with the browser's native WebMCP tool list.
 
-At the human boundary, the static baseline still advertises all nine real agent capabilities. The compiled manifest contains four, so five stale capabilities are removed. Human confirmation remains a DOM-only action and is never registered in either manifest; neither challenge value appears in the proof. The comparison does not register the unsafe baseline with the browser or alter the live mission.
+At the human boundary, identity recovery compiles `09 → 04`, high-value checkout `10 → 04`, and production change `08 → 04`. The old registrations are aborted before the selected four-tool manifest is published. The unsafe static lists and all human actions remain outside WebMCP.
+
+## What 30 clean runs changed
+
+The production soak repeated the auth incident 30 times without a protocol failure. That established repeatability, but every run used the same policy. The Live Policy Lab tests range instead of adding more identical repetitions.
+
+Across three data-defined policy packs, 27 static agent capabilities become 12 current capabilities and 15 stale ones disappear. Human confirmation, purchase confirmation, and production approval remain outside every manifest. Checkout and production handlers return proof-only receipts and have no external side effects.
 
 ## Trust continuity model
 
@@ -124,6 +136,7 @@ LAST DOOR is a new standalone project built during the OpenAI WebMCP Challenge. 
 - A run-scoped evidence memory and deterministic authority reasoner
 - A read-only authority explanation tool and decision receipt
 - An isolated static-versus-compiled authority counterfactual
+- A human-selected Live Policy Lab that verifies native registration and revocation across three scenarios
 - A top-level native `getTools()` and `executeTool()` test bench
 - Deterministic receipt and domain checks
 
