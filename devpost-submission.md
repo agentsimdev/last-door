@@ -22,6 +22,12 @@ The final confirmation remains a visible, human-only DOM action. It is never reg
 
 LAST DOOR also includes a judge-visible Live Policy Lab. Identity recovery compiles `09 → 04`, high-value checkout `10 → 04`, and production change `08 → 04`. Loading a scenario aborts the old registrations and publishes only its four current tools through native WebMCP. Unsafe static baselines and human actions are never registered.
 
+### Live Policy Lab proof
+
+The released checkout scenario shows the full comparison in one view: `10 → 04`, six stale tools removed, native `4/4` browser verification, and no human action in the manifest.
+
+[![LAST DOOR Live Policy Lab](https://raw.githubusercontent.com/agentsimdev/last-door/main/submission/live-policy-lab.jpg)](https://github.com/agentsimdev/last-door/blob/main/submission/live-policy-lab.jpg)
+
 ## Why WebMCP fits
 
 Browser-agent, identity, commerce, and developer platform teams need a release test for stateful flows. A tool that was safe one step ago can be stale now, yet still remain callable if the page registered every tool once.
