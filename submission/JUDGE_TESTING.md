@@ -47,3 +47,10 @@ The test stops at the human gate after checking the authority rule and evidence 
 - Static counterfactual lists remain isolated and are never registered with WebMCP.
 - The Live Policy Lab registers only the four compiled, read-only proof tools for checkout and production change; the handlers have no external side effects.
 - All three policy packs use the same deterministic compiler and report zero registered human actions.
+
+## Verified release
+
+- Commit: `161662885f88bab09f9389d8e2a5372a492e42d3`
+- CI: https://github.com/agentsimdev/last-door/actions/runs/33196249187
+- Production deployment: `dpl_5ZwsoZsJEXoqEmAedsFipmfeYFkE`
+- Live QA: exact manifests verified for checkout and production change, identity mission completed through actual WebMCP, final receipt passed, and desktop/mobile console checks were clean.

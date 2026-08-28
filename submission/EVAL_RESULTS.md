@@ -100,9 +100,14 @@ The person completed door 03 on the same public run after the agent requested th
 
 Completed release runs showed no unexpected product behavior.
 
-## Live Policy Lab iteration
+## Live Policy Lab production release
 
-The 30/30 soak established repeatability for one auth policy. It did not test whether the authority compiler could express a different workflow. The next local candidate therefore adds a human-selected Live Policy Lab instead of repeating the same run again.
+The 30/30 soak established repeatability for one auth policy. It did not test whether the authority compiler could express a different workflow. The production Live Policy Lab adds a human-selected policy surface instead of repeating the same run again.
+
+- Commit: `161662885f88bab09f9389d8e2a5372a492e42d3`
+- CI: [successful exact-commit run](https://github.com/agentsimdev/last-door/actions/runs/33196249187)
+- Vercel deployment: `dpl_5ZwsoZsJEXoqEmAedsFipmfeYFkE`
+- Target: https://agentsim-last-door.vercel.app/
 
 - Three policy packs: identity recovery, high-value checkout, and production change.
 - 27 static agent capabilities across the packs.
@@ -114,7 +119,13 @@ The 30/30 soak established repeatability for one auth policy. It did not test wh
 - Loading a scenario aborts the previous registrations and publishes only that scenario's four compiled tools through `document.modelContext.registerTool()`.
 - Native `getTools()` verification passed `4/4` for identity recovery, high-value checkout, and production change; no human action appeared.
 
-The ninth domain test covers fail-closed policy lookup, every pack's compiled and removed counts, and the human-action invariant. Desktop in-app browser QA verified live revocation and mission restoration. Mobile QA verified the responsive flow and a clear fallback when WebMCP is unavailable.
+The ninth domain test covers fail-closed policy lookup, every pack's compiled and removed counts, and the human-action invariant.
+
+- Production browser QA loaded checkout, then production change, and verified that checkout tools disappeared before the new `4/4` production manifest appeared.
+- The checkout proof returned `PURCHASE_APPROVAL_PENDING`; the production proof returned `PRODUCTION_APPROVAL_PENDING`. Both handlers reported `externalSideEffect: false`.
+- The identity mission was restored and completed through actual WebMCP. The stale event returned `STALE_CHALLENGE`, the fresh event resolved, and the human-boundary manifest omitted `confirm_human_presence`.
+- The final receipt passed with three gates, two agent completions, one safe recovery, one human handoff, eight evidence facts, and zero unauthorized attempts.
+- Desktop and mobile-width QA showed no horizontal overflow, duplicate IDs, unnamed interactive controls, or console warnings and errors.
 
 ### Video transfer proof
 

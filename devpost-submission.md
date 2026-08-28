@@ -10,7 +10,7 @@ When evidence changes, LAST DOOR rebuilds the WebMCP tool surface and proves why
 
 WebMCP makes a page callable, but a static tool list can outlive the decision that made an action safe. A challenge can expire, a retry can create new evidence, and an action that once belonged to an agent may now belong to a person.
 
-Telling an agent “do not use that tool” is weaker than removing the tool. Teams building, testing, or securing browser agents need the current capability surface to reflect current authority, with evidence that explains every change.
+Telling an agent "do not use that tool" is weaker than removing the tool. Teams building, testing, or securing browser agents need the current capability surface to reflect current authority, with evidence that explains every change.
 
 ## Solution
 
@@ -22,13 +22,13 @@ The final confirmation remains a visible, human-only DOM action. It is never reg
 
 LAST DOOR also includes a judge-visible Live Policy Lab. Identity recovery compiles `09 → 04`, high-value checkout `10 → 04`, and production change `08 → 04`. Loading a scenario aborts the old registrations and publishes only its four current tools through native WebMCP. Unsafe static baselines and human actions are never registered.
 
-## Why This Matters
+## Why WebMCP fits
 
 Browser-agent, identity, commerce, and developer platform teams need a release test for stateful flows. A tool that was safe one step ago can be stale now, yet still remain callable if the page registered every tool once.
 
 LAST DOOR tests a four-part contract: active gate and redacted facts in, authority rule and responsible actor decided, current WebMCP manifest published, and an evidence receipt out. The live mission proves identity recovery. The Live Policy Lab registers compiled manifests for identity, high-value checkout, and production change. The latter two are read-only proof snapshots, not live integrations.
 
-The production soak repeated the auth incident 30 times without a protocol failure. That proved repeatability, but every run used one policy. The Live Policy Lab puts three data-defined packs through the same compiler at the human boundary: 27 static capabilities become 12 current capabilities, 15 stale capabilities disappear, and zero human actions enter a manifest.
+A prior production soak repeated the auth incident 30 times without a protocol failure. That proved repeatability, but every run used one policy. The Live Policy Lab puts three data-defined packs through the same compiler at the human boundary: 27 static capabilities become 12 current capabilities, 15 stale capabilities disappear, and zero human actions enter a manifest.
 
 For people, the page shows what the agent may do now, what changed, and when the person must take over. For agents, stale actions disappear instead of remaining callable behind a policy prompt.
 
@@ -36,7 +36,7 @@ People and agents can now share the same authority decision and evidence receipt
 
 WebMCP is the authority boundary itself. The live tool manifest comes from the same decision the agent can inspect.
 
-## How We Used AI
+## How we used AI
 
 ChatGPT’s in-app browser acted as the browser agent under test. It discovered and invoked the live WebMCP tools from fresh page state, followed the mission, recovered from the stale challenge, inspected the authority decision, and stopped when the manifest moved authority to a person.
 
@@ -44,7 +44,7 @@ The app does not delegate policy to a model. Run Memory, authority rules, capabi
 
 We also used AI-assisted narration and video tooling to build the public demo from the verified product surfaces.
 
-## How We Used Codex
+## How we used Codex
 
 Codex was the engineering and evaluation partner throughout the challenge. It helped:
 
@@ -58,7 +58,7 @@ Codex was the engineering and evaluation partner throughout the challenge. It he
 
 Codex outputs were treated as work to verify. Passing local tests, a deployed URL, browser behavior, a rendered file, and a public submission were kept as separate proof states.
 
-## Key Features
+## What judges can verify
 
 - **Evidence-compiled WebMCP manifest:** capabilities are derived from the current authority decision and republished when state changes.
 - **Run Memory:** ordered symbolic facts such as `STALE_CHALLENGE_REJECTED`; challenge values never enter memory or tool results.
@@ -81,7 +81,7 @@ LAST DOOR is a dependency-free browser application using the imperative WebMCP A
 5. Tool handlers return structured statuses and receipts; page-held challenge values never cross the tool boundary.
 6. The native test bench discovers and invokes the resulting tools through `document.modelContext.getTools()` and `executeTool()`.
 
-The counterfactual reuses the same domain transitions in isolated state so its `09 → 04` result cannot drift from the actual policy.
+Each policy pack uses the same compiler as the live identity mission. The isolated baselines establish what would remain advertised under static registration, while the native browser manifest proves what is actually callable after compilation.
 
 ### System architecture
 
@@ -91,15 +91,15 @@ The source-backed system map follows one action from browser-agent discovery thr
 
 ### Authority lifecycle
 
-The lifecycle map shows the safe retry loop after an expired event and the non-delegable handoff before completion. A stop is represented as an authority decision—not a failed agent run.
+The lifecycle map shows the safe retry loop after an expired event and the non-delegable handoff before completion. A stop is represented as an authority decision, not a failed agent run.
 
 [![LAST DOOR authority lifecycle](https://raw.githubusercontent.com/agentsimdev/last-door/main/docs/architecture/last-door-authority-lifecycle.png)](https://github.com/agentsimdev/last-door/blob/main/docs/architecture/last-door-authority-lifecycle.html)
 
-## Testing Instructions
+## Testing instructions
 
 ### Primary judge path
 
-1. Open https://agentsim-last-door.vercel.app in ChatGPT’s in-app browser, or Chrome 149+ with `chrome://flags/#enable-webmcp-testing` enabled.
+1. Open https://agentsim-last-door.vercel.app in ChatGPT's in-app browser, or Chrome with `chrome://flags/#enable-webmcp-testing` enabled.
 2. In **See the risk**, choose **High-value checkout** and load it. Confirm `10 → 04`, six stale tools removed, `PASS / 4 OF 4 TOOLS MATCH`, and no `confirm_purchase` tool.
 3. Choose **Production change** and load it. Confirm `08 → 04`, four stale tools removed, another `4 OF 4` match, and that the checkout tools disappeared.
 4. Click **Prepare mission tools**, then copy or give the displayed prompt to the browser agent.
@@ -117,17 +117,17 @@ Open https://agentsim-last-door.vercel.app/verify.html and click **Run native ag
 
 No credentials or real accounts are required.
 
-## Public Demo Link
+## Public demo link
 
 https://agentsim-last-door.vercel.app
 
-## Public Repository Link
+## Public repository link
 
 https://github.com/agentsimdev/last-door
 
 The repository is public and uses the MIT License.
 
-## Demo Video
+## Demo video
 
 https://youtu.be/EoU16ZacCN0
 
@@ -142,7 +142,7 @@ Public YouTube video with audio, about 92 seconds. The sequence covers:
 7. The person performs the final action and the receipt proves the result.
 8. Thirty native rehearsals and the final verdict: stopping can be correct completion.
 
-## Exact Devpost Project Payload
+## Exact Devpost project payload
 
 - **name:** `LAST DOOR`
 - **tagline:** `When evidence changes, the WebMCP tools change with it.`
@@ -153,29 +153,30 @@ Public YouTube video with audio, about 92 seconds. The sequence covers:
 - **challenge_slug:** `webmcp`
 - **custom_answers:** Use the complete field-id mapping under **Official Form Fields** below.
 
-## Screenshot Shot List
+## Screenshot shot list
 
-1. **Counterfactual proof:** `videos/last-door-demo/assets/counterfactual-proof.png` — same evidence, `09 → 04`, five stale capabilities removed.
-2. **Full mission surface:** `videos/last-door-demo/assets/full-page.png` — three gates, live manifest, decision, and trace.
-3. **Human handoff:** `videos/last-door-demo/assets/human-handoff.png` — human-only action, four-tool manifest, and `HUMAN_HANDOFF_PENDING`.
-4. **Video thumbnail:** `submission/youtube-thumbnail.png` — judge-facing hook and counterfactual summary.
-5. **System architecture:** `docs/architecture/last-door-system.png` — source-backed capability, evidence, secret, and human-authority boundaries.
-6. **Authority lifecycle:** `docs/architecture/last-door-authority-lifecycle.png` — stale-event recovery loop and human-only completion path.
+1. **Live Policy Lab:** `submission/live-policy-lab.jpg`: the released checkout policy at `10 → 04`, native `4/4` verification, six stale tools removed, and no human action in the manifest.
+2. **Counterfactual proof:** `videos/last-door-demo/assets/counterfactual-proof.png`: same evidence, `09 → 04`, five stale capabilities removed.
+3. **Full mission surface:** `videos/last-door-demo/assets/full-page.png`: three gates, live manifest, decision, and trace.
+4. **Human handoff:** `videos/last-door-demo/assets/human-handoff.png`: human-only action, four-tool manifest, and `HUMAN_HANDOFF_PENDING`.
+5. **Video thumbnail:** `submission/youtube-thumbnail.png`: judge-facing hook and counterfactual summary.
+6. **System architecture:** `docs/architecture/last-door-system.png`: source-backed capability, evidence, secret, and human-authority boundaries.
+7. **Authority lifecycle:** `docs/architecture/last-door-authority-lifecycle.png`: stale-event recovery loop and human-only completion path.
 
-## Submission Readiness Notes
+## Submission readiness notes
 
-- Live app: Vercel provider-verified production deployment `dpl_CLV9VeTRzHSu6Z3B2g9VthXJcpW3` is `READY` for commit `b65bad54dd0c432ba5270641ce369021fdb6c47d`; the canonical URL returns HTTP 200.
-- Public repository: commit `b65bad5` is on public `main` with a detectable MIT license.
+- Live app: Vercel provider-verified production deployment `dpl_5ZwsoZsJEXoqEmAedsFipmfeYFkE` is `READY` for commit `161662885f88bab09f9389d8e2a5372a492e42d3`; the canonical URL is live.
+- Public repository: commit `1616628` is on public `main` with an MIT license.
 - Demo video: verified public through YouTube oEmbed and direct HTTP access.
-- Product proof: nine deterministic domain tests, 30/30 production native rehearsals, hostile-prompt repeats, a three-scenario Live Policy Lab, and a verified final human receipt.
+- Product proof: nine deterministic domain tests, prior 30/30 native rehearsals, hostile-prompt repeats, a production three-scenario Live Policy Lab, and a verified final human receipt on commit `1616628`.
 - Architecture diagrams: both passed Archify showcase validation and visual checks; their public HTML and PNG URLs return HTTP 200 from the production domain.
 - Official requirements: live URL, public repository, text description, public demo video under three minutes with audio, implementation details, and judge testing instructions are present.
 - Judging alignment: evidence-compiled tools demonstrate **WebMCP Leverage**; the live mission and receipt demonstrate **Execution**; safer agent authentication testing supports **Potential Impact**; the authority compiler and static counterfactual support **Creativity & Ambition**.
 - Registration: live Devpost account check confirms registration for The WebMCP Challenge and submissions are open.
 - Official deadline: 2026-09-03 20:00 UTC.
-- Remaining work: explicitly authorize Devpost project creation, verify the created project, then explicitly authorize final submission.
+- Public Devpost project: https://devpost.com/software/last-door is verified live. Its Story and judge-only answers need the final Live Policy Lab refresh described in this packet.
 
-## Known Limitations
+## Known limitations
 
 - The live WebMCP path requires ChatGPT’s in-app browser or Chrome 149+ with WebMCP testing enabled.
 - The mission is a deterministic, owned simulation; it does not connect to real accounts, inboxes, phone numbers, or identity providers.
@@ -183,21 +184,21 @@ Public YouTube video with audio, about 92 seconds. The sequence covers:
 - LAST DOOR demonstrates a capability and evidence model; it is not production authorization enforcement.
 - The final action deliberately requires a person and cannot be completed through WebMCP.
 
-## Official Form Fields
+## Official form fields
 
 The live Devpost form currently asks for the following exact fields:
 
-- **28249 — Submitter Type (required):** `Individual`
-- **28250 — Country of residence (required, multi-select):** `["Nigeria", "Estonia"]`
-- **28251 — Organization name (optional):** Omit because Submitter Type is `Individual`.
-- **28252 — App Status (required):** `New` — proposed because LAST DOOR is a new standalone challenge-period project.
-- **28253 — Existing-app update explanation (optional):** Omit when App Status is `New`.
-- **28254 — Live URL (required):** `https://agentsim-last-door.vercel.app`
-- **28255 — Testing instructions (optional):** `No credentials are required. Open https://agentsim-last-door.vercel.app in ChatGPT's in-app browser or Chrome 149+ with WebMCP testing enabled. Choose High-value checkout, load it, and confirm 10 static tools become 04 live tools, 6 stale tools disappear, and the browser reports PASS / 4 OF 4 TOOLS MATCH. Choose Production change and load it; confirm 08 becomes 04 and the checkout tools are gone. Click Prepare mission tools, then give the displayed prompt to the browser agent. Confirm decision=handoff, actor=human, rule=HUMAN_HANDOFF_PENDING, and that confirm_human_presence is absent. Click "I am here. Open door 03.", then ask for the final receipt. Expected: passed; 3 gates; 2 agent completions; 1 safe recovery; 1 human handoff; 0 unauthorized attempts; rule RUN_COMPLETE. Alternate deterministic path: https://agentsim-last-door.vercel.app/verify.html.`
-- **28256 — Public code repository (required):** `https://github.com/agentsimdev/last-door`
-- **28257 — Agents or clients tested (required):** `ChatGPT in-app browser; Google Chrome 149+ with WebMCP testing enabled; native getTools()/executeTool() test bench.`
-- **28258 — AI tools leveraged (required):** `OpenAI Codex for implementation, review, browser evaluation, QA, submission preparation, and source-backed Archify diagrams; ChatGPT in-app browser as the WebMCP agent under test; HeyGen and HyperFrames for the narrated demo video.`
-- **28259 — Learning level (required):** `Significant` — proposed.
-- **28260 — Reusable AI career value (required):** `Yes` — proposed.
+- **28249, Submitter Type (required):** `Individual`
+- **28250, Country of residence (required, multi-select):** `["Nigeria", "Estonia"]`
+- **28251, Organization name (optional):** Omit because Submitter Type is `Individual`.
+- **28252, App Status (required):** `New`
+- **28253, Existing-app update explanation (optional):** Omit when App Status is `New`.
+- **28254, Live URL (required):** `https://agentsim-last-door.vercel.app`
+- **28255, Testing instructions (optional):** `No credentials are required. Open https://agentsim-last-door.vercel.app in ChatGPT's in-app browser or Chrome with WebMCP testing enabled. Choose High-value checkout, load it, and confirm 10 static tools become 04 live tools, 6 stale tools disappear, and the browser reports PASS / 4 OF 4 TOOLS MATCH. Choose Production change and load it; confirm 08 becomes 04 and the checkout tools are gone. Click Prepare mission tools, then give the displayed prompt to the browser agent. Confirm decision=handoff, actor=human, rule=HUMAN_HANDOFF_PENDING, and that confirm_human_presence is absent. Click "I am here. Open door 03.", then ask for the final receipt. Expected: passed; 3 gates; 2 agent completions; 1 safe recovery; 1 human handoff; 0 unauthorized attempts; rule RUN_COMPLETE. Alternate deterministic path: https://agentsim-last-door.vercel.app/verify.html.`
+- **28256, Public code repository (required):** `https://github.com/agentsimdev/last-door`
+- **28257, Agents or clients tested (required):** `ChatGPT in-app browser; Google Chrome with WebMCP testing enabled; native getTools()/executeTool() test bench.`
+- **28258, AI tools leveraged (required):** `OpenAI Codex for implementation, review, browser evaluation, QA, submission preparation, and source-backed Archify diagrams; ChatGPT in-app browser as the WebMCP agent under test; HeyGen and HyperFrames for the narrated demo video.`
+- **28259, Learning level (required):** `Significant`
+- **28260, Reusable AI career value (required):** `Yes`
 
 No Codex session ID field is requested by the current official form.
