@@ -127,12 +127,15 @@ The ninth domain test covers fail-closed policy lookup, every pack's compiled an
 - The final receipt passed with three gates, two agent completions, one safe recovery, one human handoff, eight evidence facts, and zero unauthorized attempts.
 - Desktop and mobile-width QA showed no horizontal overflow, duplicate IDs, unnamed interactive controls, or console warnings and errors.
 
-### Video transfer proof
+### Final video proof
 
-The local video candidate now uses the existing 30/30 verifier receipt as the bridge into the transfer question. The closing frame shows identity recovery `09 → 04`, high-value checkout `10 → 04`, production change `08 → 04`, and the aggregate `3 / 15 / 0` receipt.
+The final product film uses the existing 30/30 verifier receipt as the bridge into the transfer question. Its product frames show identity recovery `09 → 04`, high-value checkout `10 → 04`, production change `08 → 04`, and the human-only stop boundary.
 
-- Composition duration: 98.871 seconds.
-- HyperFrames check: passed runtime, layout, motion, and contrast gates.
-- Final-frame snapshots: no clipping, overflow, or new contrast warnings.
-- Public YouTube video: unchanged.
-- Narration: current Marcia line remains; the transfer evidence is music-only because the same-voice HeyGen request returned `HTTP 402 insufficient_credit`.
+- Composition duration: 57.5 seconds.
+- HyperFrames check: passed runtime, layout, motion, and contrast gates; all 14 text checks pass WCAG AA.
+- Render: 1920×1080, 30fps H.264 with 48kHz stereo AAC; full audio/video decode passed.
+- Audio: -16.0 LUFS integrated, 5.8 LU range, -1.5 dBTP.
+- Narration verification: local Whisper recovered every scripted sentence.
+- Media provenance: Kokoro-82M at revision `f3ff3571791e39611d31c381e3a41a3af07b4987` is Apache-2.0; music and sound effects are original procedural synthesis.
+- YouTube checks: copyright and Community Guidelines both returned `No issues found`.
+- Public YouTube video: https://youtu.be/0ZipbTT0iD0 (`isUnlisted:false`, oEmbed and direct playback available).

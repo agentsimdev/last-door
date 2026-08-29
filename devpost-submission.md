@@ -60,7 +60,7 @@ Codex was the engineering and evaluation partner throughout the challenge. It he
 - compare observed agent behavior with the page-owned rule, evidence, manifest, and counters;
 - iterate the product narrative, site, branded demo video, captions, music, and thumbnail;
 - create source-backed system and lifecycle diagrams with Archify, then validate their geometry, readability, and light/dark presentation;
-- verify the final 92.133-second MP4 through full audio/video decode before publication.
+- verify the final 57.5-second MP4 through full audio/video decode before publication.
 
 Codex outputs were treated as work to verify. Passing local tests, a deployed URL, browser behavior, a rendered file, and a public submission were kept as separate proof states.
 
@@ -135,18 +135,17 @@ The repository is public and uses the MIT License.
 
 ## Demo video
 
-https://youtu.be/EoU16ZacCN0
+https://youtu.be/0ZipbTT0iD0
 
-Public YouTube video with audio, about 92 seconds. The sequence covers:
+Public YouTube video with audio, 57.5 seconds. The sequence covers:
 
-1. Same evidence: nine static capabilities versus four current capabilities.
-2. The human action is never registered as a tool.
-3. The mission starts from a versioned authority decision.
-4. An expired challenge is rejected without returning or storing its value.
-5. A fresh event recovers cleanly.
-6. The agent stops under `HUMAN_HANDOFF_PENDING`.
-7. The person performs the final action and the receipt proves the result.
-8. Thirty native rehearsals and the final verdict: stopping can be correct completion.
+1. The same evidence produces nine static capabilities versus four current capabilities.
+2. Door one clears and the first challenge arrives expired.
+3. The stale challenge is rejected without returning or storing its value.
+4. Authority moves to a person under `HUMAN_HANDOFF_PENDING`.
+5. No confirmation capability exists, so the agent stops.
+6. The person performs the one human action and the rule becomes `RUN_COMPLETE`.
+7. The final verdict: stopping can be correct completion.
 
 ## Exact Devpost project payload
 
@@ -155,7 +154,7 @@ Public YouTube video with audio, about 92 seconds. The sequence covers:
 - **description:** Use the finished Markdown from **Problem** through **Testing Instructions** above.
 - **built_with:** `["HTML", "CSS", "JavaScript", "WebMCP", "OpenAI Codex", "Vercel"]`
 - **links:** `[{"url":"https://agentsim-last-door.vercel.app"},{"url":"https://github.com/agentsimdev/last-door"}]`
-- **video_url:** `https://youtu.be/EoU16ZacCN0`
+- **video_url:** `https://youtu.be/0ZipbTT0iD0`
 - **challenge_slug:** `webmcp`
 - **custom_answers:** Use the complete field-id mapping under **Official Form Fields** below.
 
@@ -171,16 +170,16 @@ Public YouTube video with audio, about 92 seconds. The sequence covers:
 
 ## Submission readiness notes
 
-- Live app: Vercel provider-verified production deployment `dpl_5ZwsoZsJEXoqEmAedsFipmfeYFkE` is `READY` for commit `161662885f88bab09f9389d8e2a5372a492e42d3`; the canonical URL is live.
-- Public repository: commit `1616628` is on public `main` with an MIT license.
-- Demo video: verified public through YouTube oEmbed and direct HTTP access.
-- Product proof: nine deterministic domain tests, prior 30/30 native rehearsals, hostile-prompt repeats, a production three-scenario Live Policy Lab, and a verified final human receipt on commit `1616628`.
+- Live app: Vercel provider-verified production deployment `dpl_7Z9UEpdj7MExg1W9ohQFUTsK7fzc` is `READY` for evidence commit `80220c8b2fae2fbf96e7a4aa6d98e2f061d34883`; the canonical URL is live.
+- Public repository: evidence commit `80220c8` is on public `main` with an MIT license; the source-backed architecture pins the behavior revision `e6ac8d9`.
+- Demo video: verified public through YouTube oEmbed and direct HTTP access; `isUnlisted:false`, copyright and Community Guidelines checks passed.
+- Product proof: nine deterministic domain tests, prior 30/30 native rehearsals, hostile-prompt repeats, a production three-scenario Live Policy Lab, and a verified final human receipt on the released behavior.
 - Architecture diagrams: both passed Archify showcase validation and visual checks; their public HTML and PNG URLs return HTTP 200 from the production domain.
 - Official requirements: live URL, public repository, text description, public demo video under three minutes with audio, implementation details, and judge testing instructions are present.
 - Judging alignment: evidence-compiled tools demonstrate **WebMCP Leverage**; the live mission and receipt demonstrate **Execution**; safer agent authentication testing supports **Potential Impact**; the authority compiler and static counterfactual support **Creativity & Ambition**.
 - Registration: live Devpost account check confirms registration for The WebMCP Challenge and submissions are open.
 - Official deadline: 2026-09-03 20:00 UTC.
-- Public Devpost project: https://devpost.com/software/last-door is verified live. Its Story and judge-only answers need the final Live Policy Lab refresh described in this packet.
+- Public Devpost project: https://devpost.com/software/last-door is verified live with the Live Policy Lab Story, source-backed diagrams, final public video, and refreshed judge-only testing instructions.
 
 ## Known limitations
 

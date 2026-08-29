@@ -50,7 +50,8 @@ The test stops at the human gate after checking the authority rule and evidence 
 
 ## Verified release
 
-- Commit: `161662885f88bab09f9389d8e2a5372a492e42d3`
-- CI: https://github.com/agentsimdev/last-door/actions/runs/33196249187
-- Production deployment: `dpl_5ZwsoZsJEXoqEmAedsFipmfeYFkE`
+- Behavior revision: `e6ac8d9baf4f37ebcdc91fd028c48e9d3ca8b21f`
+- Evidence revision: `80220c8b2fae2fbf96e7a4aa6d98e2f061d34883`
+- CI: https://github.com/agentsimdev/last-door/actions/runs/33198159962
+- Production deployment: `dpl_7Z9UEpdj7MExg1W9ohQFUTsK7fzc`
 - Live QA: exact manifests verified for checkout and production change, identity mission completed through actual WebMCP, final receipt passed, and desktop/mobile console checks were clean.
