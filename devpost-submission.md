@@ -40,7 +40,7 @@ For people, the page shows what the agent may do now, what changed, and when the
 
 People and agents can now share the same authority decision and evidence receipt. The agent handles repeatable work and safe recovery; the person performs the non-delegable action. A correct stop becomes measurable completion rather than a vague refusal.
 
-WebMCP is the authority boundary itself. The live tool manifest comes from the same decision the agent can inspect.
+LAST DOOR tests the agent capability boundary: when evidence changes, the callable WebMCP surface changes with it. Production systems must still enforce authorization on the server; this lab verifies the browser-agent contract and catches stale or human-owned actions before release.
 
 ## How we used AI
 

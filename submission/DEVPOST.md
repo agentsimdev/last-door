@@ -36,7 +36,7 @@ Thirty clean production rehearsals proved that the auth path was repeatable, but
 
 ## Why WebMCP fits
 
-The authority decision and the WebMCP manifest come from the same domain function. When evidence changes, LAST DOOR aborts the old tool registrations and publishes the capabilities allowed by the new decision. WebMCP is not transport decoration here: its live tool surface is the authority boundary being tested.
+The authority decision and the WebMCP manifest come from the same domain function. When evidence changes, LAST DOOR aborts the old tool registrations and publishes the capabilities allowed by the new decision. WebMCP is not transport decoration here: its live tool surface is the agent capability boundary being tested. Production backends must still enforce authorization; LAST DOOR verifies that the browser no longer advertises stale or human-owned actions.
 
 The agent can inspect the decision, rule, actor, and redacted evidence without receiving a challenge value. It can request the handoff, but it cannot perform the final confirmation.
 
