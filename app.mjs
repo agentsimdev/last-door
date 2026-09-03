@@ -453,7 +453,7 @@ async function waitForNativeTool(name) {
 
 async function callNative(name) {
   const tool = await waitForNativeTool(name);
-  const raw = await document.modelContext.executeTool(tool, {});
+  const raw = await document.modelContext.executeTool(tool, JSON.stringify({}));
   const result = typeof raw === "string" ? JSON.parse(raw) : raw;
   const item = document.createElement("li");
   item.textContent = `${name} ${JSON.stringify(result)}`;
