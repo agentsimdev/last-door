@@ -7,7 +7,7 @@
 
 ## Primary test
 
-1. Open https://agentsim-last-door.vercel.app.
+1. Open https://last-door.agentsim.dev.
 2. In **See the risk**, choose `High-value checkout` and click `Load high-value checkout policy in WebMCP`. Confirm `10 → 04`, six stale tools removed, and `PASS / 4 OF 4 TOOLS MATCH`. `confirm_purchase` must be absent.
 3. Choose `Production change` and load it. Confirm `08 → 04`, four stale tools removed, and another native `4 OF 4` match. The checkout tools must be gone and `approve_production_change` must be absent.
 4. Click `Prepare mission tools`, then copy or give the displayed agent prompt to the browser agent.
@@ -32,7 +32,7 @@ evidence facts: 8
 
 ## Deterministic native test bench
 
-Open https://agentsim-last-door.vercel.app/verify.html and click `Run native agent path`. The route opens the mission in top-level verification mode and invokes its tools through the browser's native `getTools()` and `executeTool()` methods.
+Open https://last-door.agentsim.dev/verify.html and click `Run native agent path`. The route opens the mission in top-level verification mode and invokes its tools through the browser's native `getTools()` and `executeTool()` methods.
 
 The test stops at the human gate after checking the authority rule and evidence memory. Confirm presence on the page, then click `Read final native receipt`.
 

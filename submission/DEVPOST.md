@@ -66,6 +66,6 @@ LAST DOOR is a new standalone project built during the challenge period. AgentSI
 
 ## Links
 
-- Live app: https://agentsim-last-door.vercel.app
+- Live app: https://last-door.agentsim.dev
 - Public repository: https://github.com/agentsimdev/last-door
 - Demo video: https://youtu.be/0ZipbTT0iD0

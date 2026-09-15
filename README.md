@@ -2,7 +2,7 @@
 
 LAST DOOR is a WebMCP authority compiler and trust continuity test for teams that build, test, or secure browser agents. It turns changing evidence into the only capabilities an agent is allowed to see, then proves why the rest disappeared.
 
-[Open the live mission](https://agentsim-last-door.vercel.app) or use the [native protocol test bench](https://agentsim-last-door.vercel.app/verify.html).
+[Open the live mission](https://last-door.agentsim.dev) or use the [native protocol test bench](https://last-door.agentsim.dev/verify.html).
 
 The receipt records what the agent completed and which authority rule controlled the final decision. It also includes the redacted evidence facts remembered during the run.
 
@@ -54,7 +54,7 @@ The lifecycle map makes the two unusual success conditions explicit: a stale eve
 
 ## Run the mission
 
-Open the page in ChatGPT's in-app browser, or in Chrome 149 or later with `chrome://flags/#enable-webmcp-testing` enabled.
+Open the page in ChatGPT's in-app browser, or in a current Chrome build with `chrome://flags/#enable-webmcp-testing` enabled.
 
 Give the browser agent this prompt:
 
@@ -105,7 +105,7 @@ Expected receipt:
 
 ## Local development
 
-No dependencies or build step are required.
+The browser app has no runtime dependencies or build step. The simple Python server remains available:
 
 ```bash
 npm run dev
@@ -113,11 +113,97 @@ npm run dev
 
 Open `http://127.0.0.1:4173/` for the mission or `http://127.0.0.1:4173/verify.html` for the native protocol test bench.
 
-Run the deterministic domain checks:
+Run the deterministic domain and native-call checks:
 
 ```bash
 npm test
 ```
+
+## Cloudflare Workers
+
+Wrangler **4.131.2** is pinned in `package-lock.json`. Use Node 22 or later:
+
+```bash
+npm ci
+npm run check
+npm run build:workers
+npm run check:workers
+npm run dev:workers
+```
+
+The last command serves the real Workers runtime at `http://127.0.0.1:8789/`; `/verify.html` opens the same native test bench. Stop that server before running `check:workers`, which starts and stops its own instance on port 8789. CI runs the domain checks, Workers dry-run and Workers HTTP check.
+
+The Workers commands copy the unchanged public files into generated `dist/` before starting Wrangler. `scripts/build-workers-assets.mjs` limits that directory to the mission, modules, styles, logo, architecture files, public submission images/HTML and Cloudflare metadata. Keeping generated runtime state outside the asset directory prevents Wrangler's watcher from reloading itself. Restart `dev:workers` after editing source files to refresh the copy. Repository metadata, dependency files, tests and local secrets are excluded. `_headers` preserves the three Vercel security headers. `_redirects` rewrites only `/` to `index.html`, keeping `/verify.html` and its `?verify=1` navigation unchanged. Missing paths return 404.
+
+### Hosting configuration
+
+The AgentSIM Cloudflare account and zone are pinned in `wrangler.jsonc`.
+
+| Command/config | Worker | Public hostname |
+| --- | --- | --- |
+| `npm run dev:workers` | `agentsim-last-door-local` | Localhost only |
+| `--env production` | `agentsim-last-door` | [last-door.agentsim.dev](https://last-door.agentsim.dev) |
+
+Both configurations disable `workers_dev` and `preview_urls`; only production has a custom-domain route. Deployment commands disable automatic configuration. No database, secret, integration or other resource binding is needed. `build:workers` validates the production configuration with a dry-run; it does not upload files or create a Worker.
+
+Deploy an approved release with:
+
+```bash
+npx wrangler whoami
+npm run deploy:production
+npx wrangler deployments status --config wrangler.jsonc --env production
+```
+
+The production command retains the configured custom domain. After a release, check root, `/verify.html`, scripts, styles, images, security headers and private-file 404s, then verify the native tools and desktop/mobile layout. Record the source SHA, Worker version and deployment ID.
+
+### Live production — 15 September 2026
+
+The mission and [native test bench](https://last-door.agentsim.dev/verify.html) are live on Cloudflare:
+
+| Release evidence | Value |
+| --- | --- |
+| Application source | `855303f9b176e8246562bd3cd3be38a56e96eb78` |
+| Worker | `agentsim-last-door` |
+| Worker ID | `75de5b7eccbe458e90fbff17077809a2` |
+| Version | `00efa20f-14b3-4bf9-8bfb-f0d7957ef595` |
+| Deployment | `9023469c-d68c-4644-86c5-6b754873dd75` |
+| Traffic | 100% |
+
+All **20 production HTTPS checks passed**: public non-HTML assets match source bytes, HTML titles and security headers are correct, and private or missing paths return 404. Cloudflare injects markup into HTML, so hosted HTML is checked by title and headers rather than byte equality.
+
+The production native identity-policy check passed: **9 static capabilities became 4 active tools**, with **PASS / 4 OF 4 TOOLS MATCH**. Human confirmation is absent from the native tool list. The 390px mobile check found no horizontal overflow or browser errors. These checks do not establish a completed final human-confirmed mission receipt.
+
+To restore this verified Cloudflare version after a later release:
+
+```bash
+npx wrangler rollback 00efa20f-14b3-4bf9-8bfb-f0d7957ef595 --config wrangler.jsonc --env production --message "Restore verified LAST DOOR version"
+npx wrangler deployments status --config wrangler.jsonc --env production
+```
+
+Rollback switches the Worker version; it does not restore DNS or external resources. Repeat the hosted checks after rollback. `vercel.json` remains as pre-migration deployment history; Vercel is no longer the application host or rollback target.
+
+### Public links
+
+Active repository URLs now use `https://last-door.agentsim.dev`. The former `https://agentsim-last-door.vercel.app` address belongs to Vercel and cannot move to Cloudflare. Historical targets in `submission/EVAL_RESULTS.md` remain unchanged as evidence of completed Vercel runs.
+
+External publication is still separate: the [Devpost project](https://devpost.com/software/last-door) Story, live link and judge-only fields **28254** (Live URL) and **28255** (testing instructions) await an approved update. The [public video](https://youtu.be/0ZipbTT0iD0) description also needs review for any old app link. The challenge, repository and video URLs themselves are unchanged. No external publication update or redirect from the old Vercel hostname is claimed here.
+
+### Local validation — 15 September 2026
+
+- Existing domain checks: **9/9 pass**; `domain.mjs`, HTML, CSS and existing media are unchanged.
+- Native-call regression: **1/1 pass**. The baseline `d03e64ca` test bench supplied a JSON string to `executeTool`; the current [WebMCP API](https://webmachinelearning.github.io/webmcp/#dom-modelcontext-executetool) requires an object. The accepted compatibility fix passes `{}`.
+- Workers 4.131.2 production dry-run passed.
+- Real workerd checks passed **10 public requests** with exact source bytes, content types and all three security headers, plus **10 missing/private-file 404s**.
+
+### Historical preview — 15 September 2026
+
+The temporary `agentsim-last-door-preview` Worker and its `last-door-preview.agentsim.dev` custom domain were deleted after production verification. Fresh provider checks found both IDs absent, and authoritative DNS returned **NXDOMAIN** for the old preview hostname.
+
+Source `17a575976e66649f99f47d4e30971297c2811b66` had been deployed there as version `e331f716-dded-4749-876f-91628defa8fc`, deployment `e2adc7b5-fd8c-4ae1-a0a3-3a6db645b4fc`. [CI passed](https://github.com/agentsimdev/last-door/actions/runs/34931116604), as did 20 hosted HTTP checks, desktop/mobile checks, all three policy manifests and recovery to `HUMAN_HANDOFF_PENDING`. That receipt recorded two agent completions, one safe recovery and zero unauthorized attempts; it did not complete the final human step.
+
+The preview rollback rehearsal deployed unchanged application version `2a2534b2-d36d-4cb8-9e9a-a52c46c5ddd7`, then restored `e331f716-dded-4749-876f-91628defa8fc` through deployment `40e567a5-21c0-46e9-851e-81f9617d1489`. All 20 HTTP checks passed before and after the switch. This verified version rollback without simulating a broken application or changing a bound resource.
+
+Sources: [Workers static assets](https://developers.cloudflare.com/workers/static-assets/binding/), [headers](https://developers.cloudflare.com/workers/static-assets/headers/), [HTML handling](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/), [rollback](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/).
 
 ## Safety boundary
 

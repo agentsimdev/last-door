@@ -105,7 +105,7 @@ The lifecycle map shows the safe retry loop after an expired event and the non-d
 
 ### Primary judge path
 
-1. Open https://agentsim-last-door.vercel.app in ChatGPT's in-app browser, or Chrome with `chrome://flags/#enable-webmcp-testing` enabled.
+1. Open https://last-door.agentsim.dev in ChatGPT's in-app browser, or Chrome with `chrome://flags/#enable-webmcp-testing` enabled.
 2. In **See the risk**, choose **High-value checkout** and load it. Confirm `10 → 04`, six stale tools removed, `PASS / 4 OF 4 TOOLS MATCH`, and no `confirm_purchase` tool.
 3. Choose **Production change** and load it. Confirm `08 → 04`, four stale tools removed, another `4 OF 4` match, and that the checkout tools disappeared.
 4. Click **Prepare mission tools**, then copy or give the displayed prompt to the browser agent.
@@ -119,13 +119,13 @@ Expected receipt: `status: passed`, three gates passed, two agent completions, o
 
 ### Deterministic native path
 
-Open https://agentsim-last-door.vercel.app/verify.html and click **Run native agent path**. The test should stop at `HUMAN REQUIRED` after verifying the authority rule and evidence memory. Confirm presence on the page, then click **Read final native receipt**.
+Open https://last-door.agentsim.dev/verify.html and click **Run native agent path**. The test should stop at `HUMAN REQUIRED` after verifying the authority rule and evidence memory. Confirm presence on the page, then click **Read final native receipt**.
 
 No credentials or real accounts are required.
 
 ## Public demo link
 
-https://agentsim-last-door.vercel.app
+https://last-door.agentsim.dev
 
 ## Public repository link
 
@@ -153,7 +153,7 @@ Public YouTube video with audio, 57.5 seconds. The sequence covers:
 - **tagline:** `When evidence changes, the WebMCP tools change with it.`
 - **description:** Use the finished Markdown from **Problem** through **Testing Instructions** above.
 - **built_with:** `["HTML", "CSS", "JavaScript", "WebMCP", "OpenAI Codex", "Vercel"]`
-- **links:** `[{"url":"https://agentsim-last-door.vercel.app"},{"url":"https://github.com/agentsimdev/last-door"}]`
+- **links:** `[{"url":"https://last-door.agentsim.dev"},{"url":"https://github.com/agentsimdev/last-door"}]`
 - **video_url:** `https://youtu.be/0ZipbTT0iD0`
 - **challenge_slug:** `webmcp`
 - **custom_answers:** Use the complete field-id mapping under **Official Form Fields** below.
@@ -198,8 +198,8 @@ The live Devpost form currently asks for the following exact fields:
 - **28251, Organization name (optional):** Omit because Submitter Type is `Individual`.
 - **28252, App Status (required):** `New`
 - **28253, Existing-app update explanation (optional):** Omit when App Status is `New`.
-- **28254, Live URL (required):** `https://agentsim-last-door.vercel.app`
-- **28255, Testing instructions (optional):** `No credentials are required. Open https://agentsim-last-door.vercel.app in ChatGPT's in-app browser or Chrome with WebMCP testing enabled. Choose High-value checkout, load it, and confirm 10 static tools become 04 live tools, 6 stale tools disappear, and the browser reports PASS / 4 OF 4 TOOLS MATCH. Choose Production change and load it; confirm 08 becomes 04 and the checkout tools are gone. Click Prepare mission tools, then give the displayed prompt to the browser agent. Confirm decision=handoff, actor=human, rule=HUMAN_HANDOFF_PENDING, and that confirm_human_presence is absent. Click "I am here. Open door 03.", then ask for the final receipt. Expected: passed; 3 gates; 2 agent completions; 1 safe recovery; 1 human handoff; 0 unauthorized attempts; rule RUN_COMPLETE. Alternate deterministic path: https://agentsim-last-door.vercel.app/verify.html.`
+- **28254, Live URL (required):** `https://last-door.agentsim.dev`
+- **28255, Testing instructions (optional):** `No credentials are required. Open https://last-door.agentsim.dev in ChatGPT's in-app browser or Chrome with WebMCP testing enabled. Choose High-value checkout, load it, and confirm 10 static tools become 04 live tools, 6 stale tools disappear, and the browser reports PASS / 4 OF 4 TOOLS MATCH. Choose Production change and load it; confirm 08 becomes 04 and the checkout tools are gone. Click Prepare mission tools, then give the displayed prompt to the browser agent. Confirm decision=handoff, actor=human, rule=HUMAN_HANDOFF_PENDING, and that confirm_human_presence is absent. Click "I am here. Open door 03.", then ask for the final receipt. Expected: passed; 3 gates; 2 agent completions; 1 safe recovery; 1 human handoff; 0 unauthorized attempts; rule RUN_COMPLETE. Alternate deterministic path: https://last-door.agentsim.dev/verify.html.`
 - **28256, Public code repository (required):** `https://github.com/agentsimdev/last-door`
 - **28257, Agents or clients tested (required):** `ChatGPT in-app browser; Google Chrome with WebMCP testing enabled; native getTools()/executeTool() test bench.`
 - **28258, AI tools leveraged (required):** `OpenAI Codex for implementation, review, browser evaluation, QA, submission preparation, and source-backed Archify diagrams; ChatGPT in-app browser as the WebMCP agent under test; HyperFrames for video composition and rendering; HeyGen for earlier narration and music iterations; Kokoro-82M for the final open-licensed narration.`
