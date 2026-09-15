@@ -220,8 +220,16 @@ Native browser checks pass all three policy manifests and the recovery path to
 `HUMAN_HANDOFF_PENDING`, with two agent completions, one safe recovery and zero
 unauthorized attempts. The actual four-tool manifest excludes human confirmation.
 Desktop/mobile layouts and browser error checks pass. Final human confirmation
-and rollback rehearsal remain acceptance steps before production cutover. This
-preview does not replace the currently published production URL.
+remains an acceptance step before production cutover. This preview does not
+replace the currently published production URL.
+
+The preview rollback rehearsal also passed: the unchanged application was
+deployed as version `2a2534b2-d36d-4cb8-9e9a-a52c46c5ddd7`, verified, then restored
+to `e331f716-dded-4749-876f-91628defa8fc` at 100% traffic. The active rollback
+deployment is `40e567a5-21c0-46e9-851e-81f9617d1489`. All 20 hosted HTTP checks
+passed before and after the switch (HTML title checks and exact non-HTML bytes).
+This proves the Worker version rollback mechanism; it did not simulate a broken
+application or change any bound resource.
 
 ## Safety boundary
 
