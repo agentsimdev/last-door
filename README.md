@@ -202,6 +202,27 @@ External publication updates require separate approval: the [Devpost project](ht
 
 Sources: [Workers static assets](https://developers.cloudflare.com/workers/static-assets/binding/), [headers](https://developers.cloudflare.com/workers/static-assets/headers/), [HTML handling](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/), [rollback](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/).
 
+### Hosted preview — 15 September 2026
+
+[Open the Cloudflare preview](https://last-door-preview.agentsim.dev) or its
+[native test bench](https://last-door-preview.agentsim.dev/verify.html).
+Application source `17a575976e66649f99f47d4e30971297c2811b66` is deployed as
+Worker version `e331f716-dded-4749-876f-91628defa8fc`, deployment
+`e2adc7b5-fd8c-4ae1-a0a3-3a6db645b4fc`, serving 100% of this preview's traffic.
+[CI passed](https://github.com/agentsimdev/last-door/actions/runs/34931116604).
+
+The hosted checks pass 10 public asset/header/content requests and 10 private or
+missing-file 404s. Scripts, styles and images match source bytes. Cloudflare adds
+challenge-platform markup and a hidden `/cdn-cgi/content` link to HTML; the
+remaining HTML matches source. No security settings were changed.
+
+Native browser checks pass all three policy manifests and the recovery path to
+`HUMAN_HANDOFF_PENDING`, with two agent completions, one safe recovery and zero
+unauthorized attempts. The actual four-tool manifest excludes human confirmation.
+Desktop/mobile layouts and browser error checks pass. Final human confirmation
+and rollback rehearsal remain acceptance steps before production cutover. This
+preview does not replace the currently published production URL.
+
 ## Safety boundary
 
 LAST DOOR uses a deterministic, owned test environment. It does not connect to real accounts, phone numbers, inboxes, or identity providers. Challenge values remain inside the page. Tools receive only status and retry information.
