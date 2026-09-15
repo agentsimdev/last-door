@@ -54,7 +54,7 @@ The lifecycle map makes the two unusual success conditions explicit: a stale eve
 
 ## Run the mission
 
-Open the page in ChatGPT's in-app browser, or in Chrome 149 or later with `chrome://flags/#enable-webmcp-testing` enabled.
+Open the page in ChatGPT's in-app browser, or in a current Chrome build with `chrome://flags/#enable-webmcp-testing` enabled.
 
 Give the browser agent this prompt:
 
@@ -105,7 +105,7 @@ Expected receipt:
 
 ## Local development
 
-No dependencies or build step are required.
+The browser app has no runtime dependencies or build step. The simple Python server remains available:
 
 ```bash
 npm run dev
@@ -113,11 +113,94 @@ npm run dev
 
 Open `http://127.0.0.1:4173/` for the mission or `http://127.0.0.1:4173/verify.html` for the native protocol test bench.
 
-Run the deterministic domain checks:
+Run the deterministic domain and native-call checks:
 
 ```bash
 npm test
 ```
+
+## Cloudflare Workers
+
+Wrangler **4.131.2** is pinned in `package-lock.json`. Use Node 22 or later:
+
+```bash
+npm ci
+npm run check
+npm run build:workers
+npm run check:workers
+npm run dev:workers
+```
+
+The last command serves the real Workers runtime at `http://127.0.0.1:8789/`; `/verify.html` opens the same native test bench. Stop that server before running `check:workers`, which starts and stops its own instance on port 8789. CI runs the domain checks, Workers dry-run and Workers HTTP check.
+
+The Workers commands copy the unchanged public files into generated `dist/` before starting Wrangler. `scripts/build-workers-assets.mjs` limits that directory to the mission, modules, styles, logo, architecture files, public submission images/HTML and Cloudflare metadata. Keeping generated runtime state outside the asset directory prevents Wrangler's watcher from reloading itself. Restart `dev:workers` after editing source files to refresh the copy. Repository metadata, dependency files, tests and local secrets are excluded. `_headers` preserves the three Vercel security headers. `_redirects` rewrites only `/` to `index.html`, keeping `/verify.html` and its `?verify=1` navigation unchanged. Missing paths return 404.
+
+### Environments and release approval
+
+The AgentSIM Cloudflare account and zone are pinned in `wrangler.jsonc`. Verify the selected account and its billing plan before deployment.
+
+| Command/config | Worker | Public hostname |
+| --- | --- | --- |
+| `npm run dev:workers` | `agentsim-last-door-local` | Localhost only |
+| `--env preview` | `agentsim-last-door-preview` | `last-door-preview.agentsim.dev` (approved) |
+| `--env production` | `agentsim-last-door` | None configured |
+
+All environments disable `workers_dev` and `preview_urls`; only preview has a custom-domain route. Deployment commands disable automatic configuration. No database, secret, integration or other resource binding is needed. A dry-run does not upload files or create a Worker. On 15 September 2026 the user approved publishing this branch and deploying the preview Worker with `last-door-preview.agentsim.dev`. Wrangler access to the verified account now succeeds. Production deployment and its hostname still require separate approval.
+
+After approval to create the preview Worker and the exact temporary hostname `last-door-preview.agentsim.dev`:
+
+```bash
+npx wrangler whoami
+npm run deploy:preview
+npx wrangler deployments status --config wrangler.jsonc --env preview
+```
+
+The preview route creates/attaches the approved custom domain and changes its DNS. Verify desktop/mobile layout, the three policy packs, native registration/revocation, the stale-challenge recovery, the human-only boundary and final receipt on the returned HTTPS URL. Record the source SHA, Worker version ID and deployment ID. Rehearse rollback between two tested preview versions before production publication.
+
+After preview acceptance and explicit approval for the production Worker plus `last-door.agentsim.dev`:
+
+```bash
+npm run deploy:production -- --domains last-door.agentsim.dev
+npx wrangler deployments status --config wrangler.jsonc --env production
+```
+
+This is a proposed hostname, not a claimed live deployment. After domain acceptance, persist its `custom_domain` route under the production environment so later deployments retain the reviewed route. Recheck root, `/verify.html`, script/style/image delivery, security headers and 404s on the production hostname; repeat the native mission and policy checks there.
+
+Use the exact known-good Cloudflare version for rollback:
+
+```bash
+npx wrangler rollback <KNOWN_GOOD_VERSION_ID> --config wrangler.jsonc --env production --message "Restore accepted LAST DOOR version"
+npx wrangler deployments status --config wrangler.jsonc --env production
+```
+
+Rollback immediately switches the Worker to the selected version; it does not roll back DNS or external resources. Repeat the hosted acceptance checks after rollback. Vercel is not the rollback target. Keep `vercel.json` until Cloudflare acceptance, then remove it and disable this project's Vercel deployment integration after scoped approval; do not change the shared Vercel team plan.
+
+### Link changes after cutover
+
+The currently published `https://agentsim-last-door.vercel.app` hostname cannot move to Cloudflare. Keep the live links above until the owned hostname is verified. The complete pre-migration source inventory at `d03e64ca6bedf25fa50bba6e76d4cab69e6978e3` is:
+
+| Active reference | Original lines | Cutover change |
+| --- | --- | --- |
+| `README.md` | 5 (mission and test bench) | Replace both live link origins |
+| `devpost-submission.md` | 108, 122, 128, 156, 201, 202 | Replace mission/test-bench URLs in current instructions and submission fields |
+| `submission/DEVPOST.md` | 69 | Replace live-app URL |
+| `submission/JUDGE_TESTING.md` | 10, 35 | Replace mission and test-bench origins |
+
+The historical targets in `submission/EVAL_RESULTS.md` at lines 4, 35, 48 and 110 describe completed Vercel runs; retain them as historical evidence and append new Cloudflare results. `vercel.json` is the retained deployment configuration, not a live application dependency.
+
+External publication updates require separate approval: the [Devpost project](https://devpost.com/software/last-door) Story, live link, and judge-only fields **28254** (Live URL) and **28255** (testing instructions); then review the [public video](https://youtu.be/0ZipbTT0iD0) description for any old app link. The [challenge](https://webmcp.devpost.com), source repository and video URL themselves do not change. These are repository-recorded destinations, not a fresh verification of external page contents. Do not edit old evaluation receipts, reupload media or claim the old hostname redirects without provider proof.
+
+### Local validation — 15 September 2026
+
+- Existing domain checks: **9/9 pass**; `domain.mjs`, HTML, CSS and existing media are unchanged.
+- Native-call regression: **1/1 pass**. The baseline `d03e64ca` test bench supplied a JSON string to `executeTool`; the current [WebMCP API](https://webmachinelearning.github.io/webmcp/#dom-modelcontext-executetool) requires an object. `app.mjs` now passes `{}`. This is a pre-existing browser API compatibility fix discovered during migration QA.
+- Browser QA verified native registration/revocation for all three policy scenarios, each with the expected **4 of 4 tools**. The corrected native path passes controlled-link completion, expired-challenge rejection, fresh recovery and the human handoff. The actual four-tool manifest excludes human confirmation; its receipt records two agent completions, one safe recovery and zero unauthorized attempts. It remains `HUMAN_HANDOFF_PENDING` until a person confirms presence.
+- Workers 4.131.2 dry-run: pass, no remote resources created.
+- Real workerd HTTP check: **10 public requests** match source bytes, including root verification query, both modules, CSS, logo, architecture and media; HTML/JavaScript/CSS content types and all three security headers pass.
+- **10 missing/private-file requests** return 404, including dependency/config/test files and Cloudflare metadata files.
+- Hosted deployment, DNS cutover, the final human-confirmed browser receipt and rollback rehearsal remain release gates.
+
+Sources: [Workers static assets](https://developers.cloudflare.com/workers/static-assets/binding/), [headers](https://developers.cloudflare.com/workers/static-assets/headers/), [HTML handling](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/), [rollback](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/).
 
 ## Safety boundary
 
