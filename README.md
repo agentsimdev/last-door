@@ -2,7 +2,7 @@
 
 LAST DOOR is a WebMCP authority compiler and trust continuity test for teams that build, test, or secure browser agents. It turns changing evidence into the only capabilities an agent is allowed to see, then proves why the rest disappeared.
 
-[Open the live mission](https://agentsim-last-door.vercel.app) or use the [native protocol test bench](https://agentsim-last-door.vercel.app/verify.html).
+[Open the live mission](https://last-door.agentsim.dev) or use the [native protocol test bench](https://last-door.agentsim.dev/verify.html).
 
 The receipt records what the agent completed and which authority rule controlled the final decision. It also includes the redacted evidence facts remembered during the run.
 
@@ -142,29 +142,19 @@ The AgentSIM Cloudflare account and zone are pinned in `wrangler.jsonc`. Verify 
 | Command/config | Worker | Public hostname |
 | --- | --- | --- |
 | `npm run dev:workers` | `agentsim-last-door-local` | Localhost only |
-| `--env preview` | `agentsim-last-door-preview` | `last-door-preview.agentsim.dev` (approved) |
-| `--env production` | `agentsim-last-door` | None configured |
+| `--env production` | `agentsim-last-door` | `last-door.agentsim.dev` (prepared production route) |
 
-All environments disable `workers_dev` and `preview_urls`; only preview has a custom-domain route. Deployment commands disable automatic configuration. No database, secret, integration or other resource binding is needed. A dry-run does not upload files or create a Worker. On 15 September 2026 the user approved publishing this branch and deploying the preview Worker with `last-door-preview.agentsim.dev`. Wrangler access to the verified account now succeeds. Production deployment and its hostname still require separate approval.
+Both configurations disable `workers_dev` and `preview_urls`; only production has a custom-domain route. Deployment commands disable automatic configuration. No database, secret, integration or other resource binding is needed. `build:workers` validates the production configuration with a dry-run; it does not upload files or create a Worker. Production deployment remains coordinated with the website hosting cutover; configuring its route does not deploy it. Earlier temporary Worker receipts are retained below as historical evidence, and that Worker is removed after production acceptance.
 
-After approval to create the preview Worker and the exact temporary hostname `last-door-preview.agentsim.dev`:
+At the coordinated production cutover for `agentsim-last-door` and `last-door.agentsim.dev`:
 
 ```bash
 npx wrangler whoami
-npm run deploy:preview
-npx wrangler deployments status --config wrangler.jsonc --env preview
-```
-
-The preview route creates/attaches the approved custom domain and changes its DNS. Verify desktop/mobile layout, the three policy packs, native registration/revocation, the stale-challenge recovery, the human-only boundary and final receipt on the returned HTTPS URL. Record the source SHA, Worker version ID and deployment ID. Rehearse rollback between two tested preview versions before production publication.
-
-After preview acceptance and explicit approval for the production Worker plus `last-door.agentsim.dev`:
-
-```bash
-npm run deploy:production -- --domains last-door.agentsim.dev
+npm run deploy:production
 npx wrangler deployments status --config wrangler.jsonc --env production
 ```
 
-This is a proposed hostname, not a claimed live deployment. After domain acceptance, persist its `custom_domain` route under the production environment so later deployments retain the reviewed route. Recheck root, `/verify.html`, script/style/image delivery, security headers and 404s on the production hostname; repeat the native mission and policy checks there.
+The production command attaches the configured custom domain and changes its DNS. The prepared route is not proof of deployment. Recheck root, `/verify.html`, script/style/image delivery, security headers and 404s on the production hostname. Verify desktop/mobile layout, all three policy packs, native registration/revocation, stale-challenge recovery, the human-only boundary and final receipt there. Record the source SHA, Worker version ID and deployment ID.
 
 Use the exact known-good Cloudflare version for rollback:
 
@@ -177,7 +167,7 @@ Rollback immediately switches the Worker to the selected version; it does not ro
 
 ### Link changes after cutover
 
-The currently published `https://agentsim-last-door.vercel.app` hostname cannot move to Cloudflare. Keep the live links above until the owned hostname is verified. The complete pre-migration source inventory at `d03e64ca6bedf25fa50bba6e76d4cab69e6978e3` is:
+The previously published `https://agentsim-last-door.vercel.app` hostname cannot move to Cloudflare. Current repository links now target `https://last-door.agentsim.dev`; publish these changes with the verified hosting cutover. The complete pre-migration source inventory at `d03e64ca6bedf25fa50bba6e76d4cab69e6978e3` is:
 
 | Active reference | Original lines | Cutover change |
 | --- | --- | --- |
@@ -202,13 +192,15 @@ External publication updates require separate approval: the [Devpost project](ht
 
 Sources: [Workers static assets](https://developers.cloudflare.com/workers/static-assets/binding/), [headers](https://developers.cloudflare.com/workers/static-assets/headers/), [HTML handling](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/), [rollback](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/).
 
-### Hosted preview — 15 September 2026
+### Historical hosted preview — 15 September 2026
 
-[Open the Cloudflare preview](https://last-door-preview.agentsim.dev) or its
-[native test bench](https://last-door-preview.agentsim.dev/verify.html).
-Application source `17a575976e66649f99f47d4e30971297c2811b66` is deployed as
+The temporary [Cloudflare preview](https://last-door-preview.agentsim.dev) and its
+[native test bench](https://last-door-preview.agentsim.dev/verify.html) were used
+for the following verification. These historical URLs are retired after the
+production hosting cutover.
+Application source `17a575976e66649f99f47d4e30971297c2811b66` was deployed as
 Worker version `e331f716-dded-4749-876f-91628defa8fc`, deployment
-`e2adc7b5-fd8c-4ae1-a0a3-3a6db645b4fc`, serving 100% of this preview's traffic.
+`e2adc7b5-fd8c-4ae1-a0a3-3a6db645b4fc`, serving 100% of that preview's traffic.
 [CI passed](https://github.com/agentsimdev/last-door/actions/runs/34931116604).
 
 The hosted checks pass 10 public asset/header/content requests and 10 private or

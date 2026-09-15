@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "python3 -m http.server 4173",
     "build:assets": "node scripts/build-workers-assets.mjs",
-    "dev:workers": "npm run build:assets && wrangler dev --local --config wrangler.jsonc",
+    "dev:workers": "npm run build:assets && wrangler dev --env '' --local --config wrangler.jsonc",
     "check:workers": "npm run build:assets && node --test workers.test.mjs",
-    "build:workers": "npm run build:assets && wrangler deploy --config wrangler.jsonc --env preview --autoconfig=false --dry-run",
-    "deploy:preview": "npm run build:assets && wrangler deploy --config wrangler.jsonc --env preview --autoconfig=false",
+    "build:workers": "npm run build:assets && wrangler deploy --config wrangler.jsonc --env production --autoconfig=false --dry-run",
     "deploy:production": "npm run build:assets && wrangler deploy --config wrangler.jsonc --env production --autoconfig=false",
     "test": "node --test domain.test.mjs native.test.mjs",
     "check": "node --check app.mjs && node --test domain.test.mjs native.test.mjs"

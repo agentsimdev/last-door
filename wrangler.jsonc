@@ -16,21 +16,15 @@
     "port": 8789
   },
   "env": {
-    "preview": {
-      "name": "agentsim-last-door-preview",
-      "workers_dev": false,
-      "preview_urls": false,
-      "routes": [{
-        "pattern": "last-door-preview.agentsim.dev",
-        "custom_domain": true,
-        "zone_id": "9bbe00c2deb6a5eece607a65bd527a75"
-      }]
-    },
     "production": {
       "name": "agentsim-last-door",
       "workers_dev": false,
       "preview_urls": false,
-      "routes": []
+      "routes": [{
+        "pattern": "last-door.agentsim.dev",
+        "custom_domain": true,
+        "zone_id": "9bbe00c2deb6a5eece607a65bd527a75"
+      }]
     }
   }
 }
