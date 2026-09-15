@@ -6,7 +6,7 @@ import test from "node:test";
 
 test("Workers serves the demo, security headers and only public assets", { timeout: 30_000 }, async () => {
   const server = spawn(process.execPath, [
-    "node_modules/wrangler/bin/wrangler.js", "dev", "--local", "--config", "wrangler.jsonc",
+    "node_modules/wrangler/bin/wrangler.js", "dev", "--env", "", "--local", "--config", "wrangler.jsonc",
   ], { env: { ...process.env, CI: "1", WRANGLER_SEND_METRICS: "false" }, stdio: ["ignore", "pipe", "pipe"] });
   let output = "";
   let timeout;
