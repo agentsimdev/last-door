@@ -121,6 +121,13 @@ npm test
 
 ## Cloudflare Workers
 
+Production builds are connected to `agentsimdev/last-door` on `main` through
+Cloudflare Workers Builds. Non-production branch builds are disabled. The build
+runs `npm ci && npm run check && npm run build:workers && npm run check:workers`,
+then `npm run deploy:production`, from the repository root. Build variables pin
+`NODE_VERSION=22.19.0` and `SKIP_DEPENDENCY_INSTALL=1`; the existing Workers Builds
+token is reused. Require passing GitHub CI before merging.
+
 Wrangler **4.131.2** is pinned in `package-lock.json`. Use Node 22 or later:
 
 ```bash
